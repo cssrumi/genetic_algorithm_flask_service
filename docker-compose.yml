@@ -7,7 +7,7 @@ services:
     volumes:
       - ./flask_service/src:/app/src
     environment:
-      MONGO_IP: localhost
+      MONGO_IP: 192.168.0.59
       MONGO_PORT: 27017
       MONGO_USER: root
       MONGO_PASSWORD: example
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./gen_service/src:/app/src
     environment:
-      MONGO_IP: localhost
+      MONGO_IP: 192.168.0.59
       MONGO_PORT: 27017
       MONGO_USER: root
       MONGO_PASSWORD: example
