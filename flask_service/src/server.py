@@ -66,7 +66,7 @@ def results():
 @app.route("/last_result", methods=['GET'])
 def last_result():
     if request.method == 'GET':
-        return jsonify({'results': r.get_last()}), 200
+        return jsonify({'result': r.get_last()}), 200
     else:
         abort(400)
 
