@@ -31,7 +31,7 @@ class Results:
 
     def save(self, result):
         try:
-            result['date_time'] = datetime.now()
+            result['date_time'] = datetime.now().timestamp()
             self.results_collection.insert_one(result)
         except Exception as e:
             print(e)
