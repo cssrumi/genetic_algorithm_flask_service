@@ -54,7 +54,6 @@ class GeneticAlgorithmImpl:
             sd_a_b = sd.get(a_b)
             sd_b_c = sd.get(p.genes.get('b_c'))
             for case in self.test_cases:
-                print(case)
                 if a_b not in ('sub', 'add'):
                     score = sd_a_b(
                         case.get(a) * a_1,
