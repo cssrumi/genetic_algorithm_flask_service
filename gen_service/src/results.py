@@ -31,6 +31,9 @@ class Results:
 
     def save(self, result):
         try:
+            score = result.score
+            result = result.genes
+            result['delta'] = score
             result['date_time'] = datetime.now().timestamp()
             self.results_collection.insert_one(result)
         except Exception as e:

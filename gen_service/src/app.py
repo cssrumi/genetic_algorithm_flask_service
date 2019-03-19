@@ -43,7 +43,7 @@ def main():
         g.run()
         best = g.get_best()
         print('saving...')
-        r.save(best.genes)
+        r.save(best)
 
 
 if __name__ == '__main__':
