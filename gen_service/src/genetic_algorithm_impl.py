@@ -1,7 +1,7 @@
 from math import fabs
 
-from gen_service.src.phenotype import Phenotype
-from gen_service.src.signs import signs_dict
+from phenotype import Phenotype
+from signs import signs_dict
 
 
 class GeneticAlgorithmImpl:

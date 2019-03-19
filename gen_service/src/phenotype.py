@@ -1,7 +1,7 @@
 import random
 
-from gen_service.src.signs import signs_set
-from gen_service.src.test_cases import test_types
+from signs import signs_set
+from test_cases import test_types
 
 genes_list = ['test_type', 'a_b', 'b_c', 'a_1', 'b_1', 'c_1']
 genes_set = set(genes_list)
