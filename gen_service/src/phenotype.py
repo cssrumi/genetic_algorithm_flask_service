@@ -1,9 +1,18 @@
+import os
 import random
 
 
 class Phenotype:
+
+    try:
+        vitality = int(os.getenv('VITALITY', 5))
+        print('try block')
+    except (ValueError, TypeError):
+        vitality = 5
+
     def __init__(self, genes=None):
         self.fitness = 0
+        self.vitality = Phenotype.vitality
 
         if genes is not None:
             self.genes = genes
