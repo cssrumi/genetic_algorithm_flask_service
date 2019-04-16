@@ -1,6 +1,6 @@
 import os
-from db.db import DBFactory
-from db.db_param import DBParam
+
+from data.data_connector import DataConnectorFactory
 
 
 def init():
@@ -17,20 +17,15 @@ def init():
     except (ValueError, TypeError):
         time_interval = 60
 
-    db_type = os.getenv('DB_TYPE', 'mongodb')
-    if db_type.lower() not in DBFactory.db_types:
-        db_type = 'mongodb'
+    dc_type = os.getenv('DATA_CONNECTOR_TYPE', 'mongodb')
+    if dc_type.lower() not in DataConnectorFactory.dc_types:
+        dc_type = 'mongodb'
 
     try:
-        db = DBFactory.get_db(db_type)
-        db_param = DBParam(
-            ip=os.getenv('DB_IP', 'localhost'),
-            port=os.getenv('DB_PORT', '27017'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'root')
-        )
-        db(db_param)
-        db.test()
+        dc = DataConnectorFactory.get_data_connector(dc_type)
+        db_param = DataConnectorFactory.get_dc_param(dc_type)
+        dc(db_param)
+        dc.test()
     except (ValueError, ConnectionError) as e:
         print(e)
 

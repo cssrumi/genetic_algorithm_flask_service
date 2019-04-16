@@ -1,6 +1,7 @@
 from interface import Interface
 
-from db.db_param import DBParam
+from data.db.db_param import DBParam
+from data.web_services.web_service_param import WebServiceParam
 
 
 class ResultInterface(Interface):
@@ -21,12 +22,25 @@ class TestCaseInterface(Interface):
         pass
 
 
-class DB(Interface):
-    def __init__(self, db_param: DBParam):
-        pass
+class Connector(Interface):
 
     def connect(self):
         pass
 
     def test(self):
+        pass
+
+
+class DB(Connector):
+
+    def __init__(self, db_param: DBParam):
+        pass
+
+    def get_connection_string(self):
+        pass
+
+
+class WebService(Connector):
+
+    def __init__(self, ws_param: WebServiceParam):
         pass

@@ -1,12 +1,17 @@
 from interface import implements
+from sqlalchemy import create_engine
 
-from db.db_param import DBParam
-from db.interfaces import ResultInterface, TestCaseInterface, DB
+from data.db.db_param import DBParam
+from data.interfaces import ResultInterface, TestCaseInterface, DB
 
 
-class SQLModel(implements(DB, ResultInterface, TestCaseInterface)):
+class SQLModel(implements(ResultInterface, TestCaseInterface, DB)):
     def __init__(self, db_param: DBParam):
-        pass
+        self.args = db_param
+        self.engine = create_engine(self.get_connection_string())
+
+    def get_connection_string(self):
+        return 'sqlite:///:memory:'
 
     def connect(self):
         pass
@@ -29,15 +34,25 @@ class SQLModel(implements(DB, ResultInterface, TestCaseInterface)):
 
 
 class MySql(SQLModel):
-    pass
+
+    def get_connection_string(self):
+        db_type = self.__class__.__name__.lower()
+        connection_string = '{}+pymysql://{}:{}@{}:{}/{}'.format(
+            db_type, self.args.user, self.args.password,
+            self.args.ip, self.args.port, self.args.db_name
+        )
+        return connection_string
 
 
 class MSSQL(SQLModel):
     pass
 
 
-class MongoDB(implements(DB, ResultInterface, TestCaseInterface)):
+class MongoDB(implements(ResultInterface, TestCaseInterface, DB)):
     def __init__(self, db_param: DBParam):
+        pass
+
+    def get_connection_string(self):
         pass
 
     def connect(self):
