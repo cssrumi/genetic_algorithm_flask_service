@@ -4,9 +4,13 @@ from test_cases import TestCases
 key_dict = {
     'Czas Pomiaru': 'date_time',
     'PmGdaPoWie01-PM10-1g': 'pm10',
+    'Kierunek wiatru': 'wind_direction',
     'Predkosc wiatru': 'wind',
     'Temperatura powietrza': 'temperature',
     'Wilgotnosc': 'humidity',
+    'Temperatura punktu rosy': 'dew_point',
+    'Cisnienie': 'pressure'
+
 }
 
 mongo_ip = os.getenv('MONGO_IP', 'localhost')
@@ -27,5 +31,5 @@ t.load()
 t.save_from_csv(
     filename='gdansk_2018.csv',
     key_dict=key_dict,
-    # delimiter=',',
+    delimiter=','
 )

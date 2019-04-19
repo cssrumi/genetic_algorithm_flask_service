@@ -1,6 +1,7 @@
 import os
 
 from data.data_connector import DataConnectorFactory
+from data.data_mapper import DataMapper
 
 
 def init():
@@ -22,9 +23,10 @@ def init():
         dc_type = 'mongodb'
 
     try:
-        dc = DataConnectorFactory.get_data_connector(dc_type)
-        db_param = DataConnectorFactory.get_dc_param(dc_type)
-        dc(db_param)
+        dm = DataMapper(DataMapper.get_default_mapping())
+        DataConnector = DataConnectorFactory.get_data_connector(dc_type)
+        dc_param = DataConnectorFactory.get_dc_param(dc_type)
+        dc = DataConnector(dc_param, dm)
         dc.test()
     except (ValueError, ConnectionError) as e:
         print(e)
@@ -37,3 +39,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    from time import sleep
+    sleep(100)

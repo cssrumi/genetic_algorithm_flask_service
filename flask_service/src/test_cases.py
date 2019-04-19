@@ -135,4 +135,12 @@ class TestCases:
         def LAST_10(self):
             return 10
 
+        @property
+        def LAST_DAY(self):
+            return 24
+
+        @property
+        def LAST_30DAYS(self):
+            return 24 * 30
+
     HOW_MANY = _Const()
