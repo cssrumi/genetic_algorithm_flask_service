@@ -2,3 +2,4 @@ Flask
 pymongo
 python-interface
 SQLAlchemy
+PyMySQL

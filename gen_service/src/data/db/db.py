@@ -3,20 +3,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pymongo
 
-from data.db.db_param import DBParam
-from data.data import Data
 from data.data_mapper import DataMapper
-from data.interfaces import ResultInterface, TestCaseInterface, DB
+from data.db.db_param import DBParam
+from data.db.model.data_sql_model import SQLData
+from data.interfaces import ResultInterface, DataInterface, DB
 from test_cases import TestCases
 
 
-class SQLModel(implements(ResultInterface, TestCaseInterface, DB)):
+class SQLModel(implements(ResultInterface, DataInterface, DB)):
     def __init__(self, db_param: DBParam, mapper: DataMapper):
         self.args = db_param
         self.engine = create_engine(self.get_connection_string(), echo=True)
         self._Session = sessionmaker(bind=self.engine)
         self.session = None
         self.mapper = mapper
+        # Data.set_table_name(Data, self.args.table_name)
 
     def get_connection_string(self):
         return 'sqlite:///:memory:'
@@ -24,6 +25,7 @@ class SQLModel(implements(ResultInterface, TestCaseInterface, DB)):
     def connect(self):
         try:
             self.session = self._Session()
+            self._create_table()
             return True
         except Exception as e:
             print(e)
@@ -32,14 +34,45 @@ class SQLModel(implements(ResultInterface, TestCaseInterface, DB)):
         if not self.connect():
             raise ConnectionError
 
+    def _create_table(self):
+        if not self.engine.dialect.has_table(self.engine, self.args.table_name):
+            SQLData.metadata.create_all(self.engine)
+
     def save_result(self, result):
         pass
 
     def get_last_results(self, how_many):
         pass
 
+    def save_data(self, data):
+        if isinstance(data, dict):
+            sql_data = SQLData(**data)
+            self.session.add(sql_data)
+            self.session.commit()
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            for d in data:
+                sql_data = SQLData(**d)
+                self.session.add(sql_data)
+            self.session.commit()
+        else:
+            raise ValueError
+
     def get_data(self, how_many):
-        pass
+        data_list = []
+        if str(how_many).upper() == 'ALL':
+            data = self.session \
+                .query(SQLData) \
+                .order_by(SQLData.date_time) \
+                .all()
+        else:
+            data = self.session \
+                .query(SQLData) \
+                .order_by(SQLData.date_time) \
+                .limit(how_many) \
+                .all()
+        for d in data:
+            data_list.append(self.mapper.get_data_object(d))
+        return data_list
 
     def get_data_by_time(self, how_long, unit):
         pass
@@ -60,7 +93,7 @@ class MSSQL(SQLModel):
     pass
 
 
-class MongoDB(implements(ResultInterface, TestCaseInterface, DB)):
+class MongoDB(implements(ResultInterface, DataInterface, DB)):
     def __init__(self, db_param: DBParam, mapper: DataMapper):
         self.args = db_param
         self.data_collection = None
@@ -95,6 +128,9 @@ class MongoDB(implements(ResultInterface, TestCaseInterface, DB)):
         pass
 
     def get_last_results(self, how_many):
+        pass
+
+    def save_data(self, data):
         pass
 
     def get_data(self, how_many):

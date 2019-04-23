@@ -1,11 +1,11 @@
 from interface import implements
 
 from data.data_mapper import DataMapper
-from data.interfaces import ResultInterface, TestCaseInterface, WebService
+from data.interfaces import ResultInterface, DataInterface, WebService
 from data.web_services.web_service_param import WebServiceParam
 
 
-class WebServiceImpl(implements(ResultInterface, TestCaseInterface, WebService)):
+class WebServiceImpl(implements(ResultInterface, DataInterface, WebService)):
     def __init__(self, ws_param: WebServiceParam, mapper: DataMapper):
         pass
 
@@ -20,6 +20,9 @@ class WebServiceImpl(implements(ResultInterface, TestCaseInterface, WebService))
         pass
 
     def get_last_results(self, how_many):
+        pass
+
+    def save_data(self, data):
         pass
 
     def get_data(self, how_many):

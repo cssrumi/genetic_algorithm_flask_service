@@ -2,6 +2,7 @@ from interface import Interface
 
 from data.data_mapper import DataMapper
 from data.db.db_param import DBParam
+from data.db.model.data_sql_model import SQLData
 from data.web_services.web_service_param import WebServiceParam
 
 
@@ -14,9 +15,12 @@ class ResultInterface(Interface):
         pass
 
 
-class TestCaseInterface(Interface):
+class DataInterface(Interface):
 
     def get_data(self, how_many):
+        pass
+
+    def save_data(self, data):
         pass
 
     def get_data_by_time(self, how_long, unit):
