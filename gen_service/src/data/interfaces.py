@@ -11,13 +11,13 @@ class ResultInterface(Interface):
     def save_result(self, result):
         pass
 
-    def get_last_results(self, how_many):
+    def get_last_results(self, quantity):
         pass
 
 
 class DataInterface(Interface):
 
-    def get_data(self, how_many):
+    def get_data(self, quantity):
         pass
 
     def save_data(self, data):

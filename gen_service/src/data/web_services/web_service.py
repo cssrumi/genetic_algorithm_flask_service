@@ -19,13 +19,13 @@ class WebServiceImpl(implements(ResultInterface, DataInterface, WebService)):
     def save_result(self, result):
         pass
 
-    def get_last_results(self, how_many):
+    def get_last_results(self, quantity):
         pass
 
     def save_data(self, data):
         pass
 
-    def get_data(self, how_many):
+    def get_data(self, quantity):
         pass
 
     def get_data_by_time(self, how_long, unit):

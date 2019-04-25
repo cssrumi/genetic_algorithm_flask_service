@@ -13,7 +13,7 @@ from test_cases import TestCases
 class SQLModel(implements(ResultInterface, DataInterface, DB)):
     def __init__(self, db_param: DBParam, mapper: DataMapper):
         self.args = db_param
-        self.engine = create_engine(self.get_connection_string(), echo=True)
+        self.engine = create_engine(self.get_connection_string(), echo=False)
         self._Session = sessionmaker(bind=self.engine)
         self.session = None
         self.mapper = mapper
@@ -41,7 +41,7 @@ class SQLModel(implements(ResultInterface, DataInterface, DB)):
     def save_result(self, result):
         pass
 
-    def get_last_results(self, how_many):
+    def get_last_results(self, quantity):
         pass
 
     def save_data(self, data):
@@ -57,9 +57,9 @@ class SQLModel(implements(ResultInterface, DataInterface, DB)):
         else:
             raise ValueError
 
-    def get_data(self, how_many):
+    def get_data(self, quantity):
         data_list = []
-        if str(how_many).upper() == 'ALL':
+        if str(quantity).upper() == 'ALL':
             data = self.session \
                 .query(SQLData) \
                 .order_by(SQLData.date_time) \
@@ -68,7 +68,7 @@ class SQLModel(implements(ResultInterface, DataInterface, DB)):
             data = self.session \
                 .query(SQLData) \
                 .order_by(SQLData.date_time) \
-                .limit(how_many) \
+                .limit(quantity) \
                 .all()
         for d in data:
             data_list.append(self.mapper.get_data_object(d))
@@ -90,7 +90,20 @@ class MySql(SQLModel):
 
 
 class MSSQL(SQLModel):
-    pass
+
+    def __init__(self, db_param: DBParam, mapper: DataMapper):
+        super().__init__(db_param, mapper)
+        self.engine.dialect.default_schema_name = self.args.db_name
+
+    # https://github.com/pymssql/pymssql/pull/309
+    # https://docs.sqlalchemy.org/en/13/dialects/mssql.html#module-sqlalchemy.dialects.mssql.mxodbc
+    def get_connection_string(self):
+        db_type = self.__class__.__name__.lower()
+        connection_string = '{}+pymssql://{}:{}@{}:{}/{}'.format(
+            db_type, self.args.user, self.args.password,
+            self.args.ip, self.args.port, self.args.db_name
+        )
+        return connection_string
 
 
 class MongoDB(implements(ResultInterface, DataInterface, DB)):
@@ -127,21 +140,27 @@ class MongoDB(implements(ResultInterface, DataInterface, DB)):
     def save_result(self, result):
         pass
 
-    def get_last_results(self, how_many):
+    def get_last_results(self, quantity):
         pass
 
     def save_data(self, data):
-        pass
+        if isinstance(data, dict):
+            self.data_collection.insert_one(data)
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            for d in data:
+                self.data_collection.insert_one(d)
+        else:
+            raise ValueError
 
-    def get_data(self, how_many):
+    def get_data(self, quantity):
         data_list = []
         test = False
         while not test:
             try:
-                if how_many != TestCases.HOW_MANY.ALL:
-                    data = self.data_collection.find().sort([('date_time', -1)]).limit(how_many)
-                else:
+                if str(quantity).upper() == 'ALL':
                     data = self.data_collection.find().sort([('date_time', -1)])
+                else:
+                    data = self.data_collection.find().sort([('date_time', -1)]).limit(quantity)
                 if data is not None:
                     for d in data:
                         data_object = self.mapper.get_data_object(d)

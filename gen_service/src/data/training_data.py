@@ -29,8 +29,8 @@ def create_training_data(data):
 
     td = []
     data_size = len(data)
-    # if data_size > 1:
-    #     data.sort(key=lambda x: x.date_time)
+    if data_size > 1:
+        data.sort(key=lambda x: x.date_time)
     for i in range(data_size):
         d = data[i]
         dt = d.date_time

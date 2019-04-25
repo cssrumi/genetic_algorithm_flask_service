@@ -110,7 +110,7 @@ def sql_model_test():
     print('DataSqlModel test completed')
 
 
-def bootstrap_test():
+def bootstrap_mysql_test():
     from data.bootstrap.bootstrap import export_data_from_csv, get_abs_path
     from data.data_connector import DataConnectorFactory
     from data.data_mapper import DataMapper
@@ -135,6 +135,56 @@ def bootstrap_test():
     export_data_from_csv(csv_file, mysql)
 
 
+def bootstrap_mssql_test():
+    from data.bootstrap.bootstrap import export_data_from_csv, get_abs_path
+    from data.data_connector import DataConnectorFactory
+    from data.data_mapper import DataMapper
+    from data.db.db_param import DBParam
+    import os
+
+    db_type = 'mssql'
+    dm = DataMapper(DataMapper.get_default_mapping())
+    MSSQL = DataConnectorFactory.get_data_connector(db_type)
+    mssql_param = DBParam(
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '1433'),
+        user=os.getenv('DATA_CONNECTOR_USER', 'sa'),
+        password=os.getenv('DATA_CONNECTOR_PASSWORD', '!mssqlAdmin123'),
+        db_name=os.getenv('DATABASE_NAME', 'data'),
+        table_name=os.getenv('TABLE_NAME', 'data'),
+    )
+    mssql = MSSQL(mssql_param, dm)
+    mssql.connect()
+    csv_file = 'gdansk_2018.csv'
+    csv_file = get_abs_path(csv_file)
+    export_data_from_csv(csv_file, mssql)
+
+
+def bootstrap_mongodb_test():
+    from data.bootstrap.bootstrap import export_data_from_csv, get_abs_path
+    from data.data_connector import DataConnectorFactory
+    from data.data_mapper import DataMapper
+    from data.db.db_param import DBParam
+    import os
+
+    db_type = 'mongodb'
+    dm = DataMapper(DataMapper.get_default_mapping())
+    MongoDB = DataConnectorFactory.get_data_connector(db_type)
+    mongodb_param = DBParam(
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
+        user=os.getenv('DATA_CONNECTOR_USER', 'root'),
+        password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
+        db_name=os.getenv('DATABASE_NAME', 'data'),
+        table_name=os.getenv('TABLE_NAME', 'data'),
+    )
+    mongodb = MongoDB(mongodb_param, dm)
+    mongodb.connect()
+    csv_file = 'gdansk_2018.csv'
+    csv_file = get_abs_path(csv_file)
+    export_data_from_csv(csv_file, mongodb)
+
+
 def training_data_test():
     from data.data_connector import DataConnectorFactory
     from data.data_mapper import DataMapper
@@ -157,14 +207,49 @@ def training_data_test():
     mysql.connect()
     data = mysql.get_data('ALL')
     training_data = create_training_data(data)
-    # for t in training_data:
-    #     print(t)
+    print(training_data[0])
+    print('MYSQL COMPLETED')
+    db_type = 'mssql'
 
+    MSSQL = DataConnectorFactory.get_data_connector(db_type)
+    mssql_param = DBParam(
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '1433'),
+        user=os.getenv('DATA_CONNECTOR_USER', 'sa'),
+        password=os.getenv('DATA_CONNECTOR_PASSWORD', '!mssqlAdmin123'),
+        db_name=os.getenv('DATABASE_NAME', 'data'),
+        table_name=os.getenv('TABLE_NAME', 'data'),
+    )
+    mssql = MSSQL(mssql_param, dm)
+    mssql.connect()
+    data = mssql.get_data('all')
+    training_data = create_training_data(data)
+    print(training_data[0])
+    print('MSSQL COMPLETED')
+
+    db_type = 'mongodb'
+    MongoDB = DataConnectorFactory.get_data_connector(db_type)
+    mongodb_param = DBParam(
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
+        user=os.getenv('DATA_CONNECTOR_USER', 'root'),
+        password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
+        db_name=os.getenv('DATABASE_NAME', 'data'),
+        table_name=os.getenv('TABLE_NAME', 'data'),
+    )
+    mongodb = MongoDB(mongodb_param, dm)
+    mongodb.connect()
+    data = mongodb.get_data('all')
+    training_data = create_training_data(data)
+    print(training_data[0])
+    print('MONGODB COMPLETED')
 
 if __name__ == '__main__':
     # data_mapper_test()
     # training_data_test()
     # mongodb_test()
     # sql_model_test()
-    # bootstrap_test()
+    # bootstrap_mysql_test()
+    # bootstrap_mssql_test()
+    # bootstrap_mongodb_test()
     training_data_test()
