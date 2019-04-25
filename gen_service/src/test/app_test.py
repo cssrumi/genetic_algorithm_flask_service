@@ -244,6 +244,7 @@ def training_data_test():
     print(training_data[0])
     print('MONGODB COMPLETED')
 
+
 if __name__ == '__main__':
     # data_mapper_test()
     # training_data_test()
