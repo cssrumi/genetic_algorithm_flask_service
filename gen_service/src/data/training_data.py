@@ -56,6 +56,6 @@ class TrainingData(Data):
         self.pm10_after_24h = pm10_after_24h
 
     def __repr__(self):
-        return '<TrainingData(' + \
+        return '<' + self.__class__.__name__ + '(' + \
                ','.join([key + '=' + str(value) for key, value in self.__dict__.items()]) + \
                ')>'

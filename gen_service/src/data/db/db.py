@@ -7,7 +7,6 @@ from data.data_mapper import DataMapper
 from data.db.db_param import DBParam
 from data.db.model.data_sql_model import SQLData
 from data.interfaces import ResultInterface, DataInterface, DB
-from test_cases import TestCases
 
 
 class SQLModel(implements(ResultInterface, DataInterface, DB)):
@@ -124,9 +123,9 @@ class MongoDB(implements(ResultInterface, DataInterface, DB)):
     def connect(self):
         try:
             db_client = pymongo.MongoClient(self.get_connection_string())
-            data_db = db_client.data
-            result_db = db_client.results
-            self.data_collection = data_db.data
+            data_db = db_client.get_database(self.args.db_name)
+            result_db = db_client.get_database(self.args.db_name)
+            self.data_collection = data_db[self.args.table_name]  # collection_name
             self.results_collection = result_db.results
         except Exception as e:
             print(e)

@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Flask, request, abort, jsonify
 from werkzeug.contrib.fixers import ProxyFix
 
-from results import Results
+from training.results import Results
 from test_cases import TestCases
 
 app = Flask(__name__)

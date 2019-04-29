@@ -1,3 +1,6 @@
+import multiprocessing
+
+
 class TestDataObject:
     def __init__(self):
         self.Czas_Pomiaru = 123
@@ -245,7 +248,62 @@ def training_data_test():
     print('MONGODB COMPLETED')
 
 
+def genotype_test():
+    from genetic_algorithm.genotype import Genotype
+    print(Genotype.gen_list)
+    g = Genotype.get_random_genotype()
+    print(g)
+
+
+def phenotype_test():
+    from genetic_algorithm.phenotype import Phenotype
+    p1 = Phenotype()
+    p1.vitality -= 1
+    assert Phenotype._vitality is not p1.vitality, "shallow copy"
+    print(Phenotype._vitality, p1.vitality)
+
+    p2 = Phenotype()
+    p3 = p1.crossover(p2)
+    print(p1)
+    print(p2)
+    print(p3)
+
+
+def genetic_algorithm_impl_test():
+    from genetic_algorithm.genetic_algorithm_impl import GeneticAlgorithmImpl
+    from data.data_connector import DataConnectorFactory
+    from data.data_mapper import DataMapper
+    from data.db.db_param import DBParam
+    import os
+
+    db_type = 'mongodb'
+    dm = DataMapper(DataMapper.get_default_mapping())
+    MongoDB = DataConnectorFactory.get_data_connector(db_type)
+    mongodb_param = DBParam(
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
+        user=os.getenv('DATA_CONNECTOR_USER', 'root'),
+        password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
+        db_name=os.getenv('DATABASE_NAME', 'data'),
+        table_name=os.getenv('TABLE_NAME', 'data'),
+    )
+    mongodb = MongoDB(mongodb_param, dm)
+    mongodb.connect()
+
+    g = GeneticAlgorithmImpl(mongodb, 100, 1)
+    g.calculate_fitness()
+    for p in g.population:
+        print(p)
+    g.calculate_fitness_in_parallel()
+    for p in g.population:
+        print(p)
+    # g.calculate_fitness_in_parallel_old()
+    # for p in g.population:
+    #     print(p)
+
+
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     # data_mapper_test()
     # training_data_test()
     # mongodb_test()
@@ -253,4 +311,7 @@ if __name__ == '__main__':
     # bootstrap_mysql_test()
     # bootstrap_mssql_test()
     # bootstrap_mongodb_test()
-    training_data_test()
+    # training_data_test()
+    # genotype_test()
+    # phenotype_test()
+    genetic_algorithm_impl_test()
