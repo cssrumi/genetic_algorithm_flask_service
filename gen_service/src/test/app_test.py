@@ -271,6 +271,7 @@ def phenotype_test():
 
 def genetic_algorithm_impl_test():
     from genetic_algorithm.genetic_algorithm_impl import GeneticAlgorithmImpl
+    from genetic_algorithm.phenotype import Phenotype
     from data.data_connector import DataConnectorFactory
     from data.data_mapper import DataMapper
     from data.db.db_param import DBParam
@@ -280,8 +281,8 @@ def genetic_algorithm_impl_test():
     dm = DataMapper(DataMapper.get_default_mapping())
     MongoDB = DataConnectorFactory.get_data_connector(db_type)
     mongodb_param = DBParam(
-        ip=os.getenv('DATA_CONNECTOR_IP', '10.111.120.18'),
-        port=os.getenv('DATA_CONNECTOR_PORT', '27017'),
+        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
         user=os.getenv('DATA_CONNECTOR_USER', 'root'),
         password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
         db_name=os.getenv('DATABASE_NAME', 'data'),
@@ -291,20 +292,20 @@ def genetic_algorithm_impl_test():
     mongodb.connect()
 
     g = GeneticAlgorithmImpl(mongodb, 100, 1)
-    g.population._calculate_fitness()
-    for p in g.population.population:
-        print(p)
+    population = []
+    for _ in range(100):
+        population.append(Phenotype())
+    # g.population._calculate_fitness(population)
+    print(g.population.get_best())
     q = GeneticAlgorithmImpl(mongodb, 100, 1)
-    q.population._calculate_fitness_in_parallel()
-    for p in q.population.population:
-        print(p)
+    # q.population._calculate_fitness_in_parallel(population)
+    print(q.population.get_best())
     # g.calculate_fitness_in_parallel_old()
     # for p in g.population:
     #     print(p)
 
 
 if __name__ == '__main__':
-    multiprocessing.freeze_support()
     # data_mapper_test()
     # training_data_test()
     # mongodb_test()

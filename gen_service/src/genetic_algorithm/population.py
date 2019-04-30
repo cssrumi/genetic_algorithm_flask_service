@@ -26,8 +26,7 @@ class Population:
         self.calculate_fitness(new_population)
 
     def get_best(self):
-        self._sort()
-        return self.population[0]
+        return min(self.population, key=lambda i: i.fitness)
 
     # @timer
     def evolve(self):
@@ -96,10 +95,7 @@ class Population:
     @timer
     def _calculate_fitness(self, population):
         for individual in population:
-            fitness = 0
-            for td in self.training_data:
-                fitness += individual.calculate_fitness(td)
-            individual.fitness = fitness
+            individual.fitness = sum((individual.calculate_fitness(td) for td in self.training_data))
         self.population.extend(population)
 
     def _calc(self, individual: Phenotype):
