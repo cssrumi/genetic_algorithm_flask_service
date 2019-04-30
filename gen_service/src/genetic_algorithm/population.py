@@ -23,7 +23,7 @@ class Population:
         new_population = []
         for _ in range(self.population_size):
             new_population.append(Phenotype())
-        self.calculate_fitness(new_population)
+        self.population = self.calculate_fitness(new_population)
 
     def get_best(self):
         return min(self.population, key=lambda i: i.fitness)
@@ -53,7 +53,7 @@ class Population:
         for mother in self.bests:
             for father in self.bests:
                 new_population.append(mother.crossover(father))
-        self.calculate_fitness(new_population)
+        self.population.extend(self.calculate_fitness(new_population))
 
     # NOT IMPLEMENTED YET
     def _evolve_by_tournament(self):
@@ -88,15 +88,15 @@ class Population:
         from multiprocessing import cpu_count
 
         if cpu_count() > 2 and self.population_size > 50:
-            self._calculate_fitness_in_parallel(population)
+            return self._calculate_fitness_in_parallel(population)
         else:
-            self._calculate_fitness(population)
+            return self._calculate_fitness(population)
 
     @timer
     def _calculate_fitness(self, population):
         for individual in population:
             individual.fitness = sum((individual.calculate_fitness(td) for td in self.training_data))
-        self.population.extend(population)
+        return population
 
     def _calc(self, individual: Phenotype):
         individual.fitness = sum((individual.calculate_fitness(t) for t in self.training_data))
@@ -107,4 +107,4 @@ class Population:
         from multiprocessing import Pool
 
         with Pool() as executor:
-            self.population.extend([individual for individual in executor.map(self._calc, population)])
+            return [individual for individual in executor.map(self._calc, population)]
