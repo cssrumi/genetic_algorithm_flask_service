@@ -174,8 +174,8 @@ def bootstrap_mongodb_test():
     dm = DataMapper(DataMapper.get_default_mapping())
     MongoDB = DataConnectorFactory.get_data_connector(db_type)
     mongodb_param = DBParam(
-        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
-        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
+        ip=os.getenv('DATA_CONNECTOR_IP', '10.111.120.18'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27017'),
         user=os.getenv('DATA_CONNECTOR_USER', 'root'),
         password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
         db_name=os.getenv('DATABASE_NAME', 'data'),
@@ -259,8 +259,8 @@ def phenotype_test():
     from genetic_algorithm.phenotype import Phenotype
     p1 = Phenotype()
     p1.vitality -= 1
-    assert Phenotype._vitality is not p1.vitality, "shallow copy"
-    print(Phenotype._vitality, p1.vitality)
+    assert Phenotype.VITALITY is not p1.vitality, "shallow copy"
+    print(Phenotype.VITALITY, p1.vitality)
 
     p2 = Phenotype()
     p3 = p1.crossover(p2)
@@ -280,8 +280,8 @@ def genetic_algorithm_impl_test():
     dm = DataMapper(DataMapper.get_default_mapping())
     MongoDB = DataConnectorFactory.get_data_connector(db_type)
     mongodb_param = DBParam(
-        ip=os.getenv('DATA_CONNECTOR_IP', '192.168.0.59'),
-        port=os.getenv('DATA_CONNECTOR_PORT', '27018'),
+        ip=os.getenv('DATA_CONNECTOR_IP', '10.111.120.18'),
+        port=os.getenv('DATA_CONNECTOR_PORT', '27017'),
         user=os.getenv('DATA_CONNECTOR_USER', 'root'),
         password=os.getenv('DATA_CONNECTOR_PASSWORD', 'example'),
         db_name=os.getenv('DATABASE_NAME', 'data'),
@@ -291,11 +291,12 @@ def genetic_algorithm_impl_test():
     mongodb.connect()
 
     g = GeneticAlgorithmImpl(mongodb, 100, 1)
-    g.calculate_fitness()
-    for p in g.population:
+    g.population._calculate_fitness()
+    for p in g.population.population:
         print(p)
-    g.calculate_fitness_in_parallel()
-    for p in g.population:
+    q = GeneticAlgorithmImpl(mongodb, 100, 1)
+    q.population._calculate_fitness_in_parallel()
+    for p in q.population.population:
         print(p)
     # g.calculate_fitness_in_parallel_old()
     # for p in g.population:

@@ -7,13 +7,13 @@ from genetic_algorithm.genotype import Genotype
 
 class Phenotype:
     try:
-        _vitality = int(os.getenv('VITALITY', 3))
+        VITALITY = int(os.getenv('VITALITY', 3))
     except (ValueError, TypeError):
-        _vitality = 3
+        VITALITY = 3
 
     def __init__(self, genotype=None):
         self.fitness = None
-        self.vitality = Phenotype._vitality
+        self.vitality = Phenotype.VITALITY
 
         if genotype is not None:
             self.genotype = genotype
@@ -46,7 +46,7 @@ class Phenotype:
 
     def calculate_fitness(self, td: TrainingData):
         result = sum([value*td.__dict__[key] for key, value in self.genotype.__dict__.items()])
-        return td.pm10_after_24h - result
+        return abs(td.pm10_after_24h - result)
 
     def __repr__(self):
         return '<' + self.__class__.__name__ + '(' + \

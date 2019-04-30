@@ -64,6 +64,7 @@ class SQLModel(implements(ResultInterface, DataInterface, DB)):
                 .order_by(SQLData.date_time) \
                 .all()
         else:
+            quantity = int(quantity)
             data = self.session \
                 .query(SQLData) \
                 .order_by(SQLData.date_time) \
@@ -159,6 +160,7 @@ class MongoDB(implements(ResultInterface, DataInterface, DB)):
                 if str(quantity).upper() == 'ALL':
                     data = self.data_collection.find().sort([('date_time', -1)])
                 else:
+                    quantity = int(quantity)
                     data = self.data_collection.find().sort([('date_time', -1)]).limit(quantity)
                 if data is not None:
                     for d in data:

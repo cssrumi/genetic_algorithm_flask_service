@@ -23,7 +23,8 @@ def get_data_connector():
 
 def main():
     population_size = int(os.getenv('POPULATION_SIZE', '100'))
-    max_generation = int(os.getenv('MAX_GENERATION', '10'))
+    max_generation = os.getenv('MAX_GENERATION', None)
+    max_generation = int(max_generation) if max_generation is not None else None
     time_interval = os.getenv('TIME_INTERVAL', '60')  # in minutes
 
     save_interval_types = ('time', 'generation')
@@ -39,7 +40,7 @@ def main():
     while not dc:
         dc = get_data_connector()
 
-    g = GeneticAlgorithmImpl(dc, 100, 100)
+    g = GeneticAlgorithmImpl(dc, population_size, max_generation)
     g.run()
 
 
