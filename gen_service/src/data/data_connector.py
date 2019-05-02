@@ -27,7 +27,9 @@ class DataConnectorFactory:
                 user=os.getenv('DATA_CONNECTOR_USER', 'root'),
                 password=os.getenv('DATA_CONNECTOR_PASSWORD', 'root'),
                 db_name=os.getenv('DATABASE_NAME', 'data'),
-                table_name=os.getenv('TABLE_NAME', 'data'),
+                table_name=os.getenv('TABLE_NAME',
+                                     os.getenv('COLLECTION_NAME', 'data')
+                                     ),
             )
         elif dc_type in WebServiceFactory.ws_types:
             return WebServiceParam(
