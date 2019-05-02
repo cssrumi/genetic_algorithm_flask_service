@@ -87,9 +87,9 @@ class Population:
         ]
 
     def calculate_fitness(self, population):
-        if Population._cpu_count > 2 and self.population_size > 50:
+        if Population._cpu_count > 2 and self.population_size >= 50:
             return self._calculate_fitness_in_parallel(population)
-        elif Population._cpu_count > 1 and self.population_size > 100:
+        elif Population._cpu_count > 1 and self.population_size >= 100:
             return self._calculate_fitness_in_parallel(population)
         else:
             return self._calculate_fitness(population)
