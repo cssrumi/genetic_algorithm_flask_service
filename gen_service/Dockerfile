@@ -10,10 +10,10 @@ ADD . /app
 RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
 
 # Run python's package manager and install packages
-RUN apt-get update
-RUN apt-get install -y freetds-dev
+#RUN apt-get update
+#RUN apt-get install -y freetds-dev
 RUN pip install --upgrade pip
-RUN pypy3 -m pip install cython
+#RUN pypy3 -m pip install cython
 RUN pip install -r requirements.txt
 
 # Run apt-get, to install the SSH server, and supervisor

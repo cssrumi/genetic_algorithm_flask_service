@@ -89,21 +89,21 @@ class MySql(SQLModel):
         return connection_string
 
 
-class MSSQL(SQLModel):
-
-    def __init__(self, db_param: DBParam, mapper: DataMapper):
-        super().__init__(db_param, mapper)
-        self.engine.dialect.default_schema_name = self.args.db_name
-
-    # https://github.com/pymssql/pymssql/pull/309
-    # https://docs.sqlalchemy.org/en/13/dialects/mssql.html#module-sqlalchemy.dialects.mssql.mxodbc
-    def get_connection_string(self):
-        db_type = self.__class__.__name__.lower()
-        connection_string = '{}+pymssql://{}:{}@{}:{}/{}'.format(
-            db_type, self.args.user, self.args.password,
-            self.args.ip, self.args.port, self.args.db_name
-        )
-        return connection_string
+# class MSSQL(SQLModel):
+#
+#     def __init__(self, db_param: DBParam, mapper: DataMapper):
+#         super().__init__(db_param, mapper)
+#         self.engine.dialect.default_schema_name = self.args.db_name
+#
+#     # https://github.com/pymssql/pymssql/pull/309
+#     # https://docs.sqlalchemy.org/en/13/dialects/mssql.html#module-sqlalchemy.dialects.mssql.mxodbc
+#     def get_connection_string(self):
+#         db_type = self.__class__.__name__.lower()
+#         connection_string = '{}+pymssql://{}:{}@{}:{}/{}'.format(
+#             db_type, self.args.user, self.args.password,
+#             self.args.ip, self.args.port, self.args.db_name
+#         )
+#         return connection_string
 
 
 class MongoDB(implements(ResultInterface, DataInterface, DB)):
@@ -180,7 +180,7 @@ class MongoDB(implements(ResultInterface, DataInterface, DB)):
 class DBFactory:
     __db_classes = {
         MySql.__name__.lower(): MySql,
-        MSSQL.__name__.lower(): MSSQL,
+        # MSSQL.__name__.lower(): MSSQL,
         MongoDB.__name__.lower(): MongoDB,
     }
     db_types = __db_classes.keys()
