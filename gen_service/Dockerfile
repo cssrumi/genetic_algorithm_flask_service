@@ -36,4 +36,4 @@ RUN chmod 755 /app/src/app.py
 
 # run commands in supervisor
 #CMD ["supervisord", "-n"]
-CMD ["pypy3", "src/app.py"]
+CMD ["pypy3", "-u", "src/app.py"]

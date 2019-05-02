@@ -2,9 +2,11 @@ import random
 
 from genetic_algorithm.phenotype import Phenotype
 from decorators import timer
+from multiprocessing import cpu_count
 
 
 class Population:
+    _cpu_count = cpu_count()
 
     def __init__(self, population_size, training_data):
         self.population_size = population_size
@@ -85,9 +87,9 @@ class Population:
         ]
 
     def calculate_fitness(self, population):
-        from multiprocessing import cpu_count
-
-        if cpu_count() > 2 and self.population_size > 50:
+        if Population._cpu_count > 2 and self.population_size > 50:
+            return self._calculate_fitness_in_parallel(population)
+        elif Population._cpu_count > 1 and self.population_size > 100:
             return self._calculate_fitness_in_parallel(population)
         else:
             return self._calculate_fitness(population)

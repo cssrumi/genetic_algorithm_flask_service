@@ -1,2 +1,2 @@
 #!/bin/sh
-pypy3 /app/src/app.py
+pypy3 -u /app/src/app.py
