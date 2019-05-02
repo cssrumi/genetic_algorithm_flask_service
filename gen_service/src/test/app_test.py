@@ -292,13 +292,11 @@ def genetic_algorithm_impl_test():
     mongodb.connect()
 
     g = GeneticAlgorithmImpl(mongodb, 100, 1)
-    population = []
-    for _ in range(100):
-        population.append(Phenotype())
-    # g.population._calculate_fitness(population)
+    population = [Phenotype() for _ in range(100)]
+    g.population._calculate_fitness(population)
     print(g.population.get_best())
     q = GeneticAlgorithmImpl(mongodb, 100, 1)
-    # q.population._calculate_fitness_in_parallel(population)
+    q.population._calculate_fitness_in_parallel(population)
     print(q.population.get_best())
     # g.calculate_fitness_in_parallel_old()
     # for p in g.population:
