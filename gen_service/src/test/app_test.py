@@ -1,4 +1,8 @@
-import multiprocessing
+import sys
+import os
+
+sys.path.append(os.path.abspath("../"))
+sys.path.append(os.path.join(os.path.abspath("../"), 'genetic_algorithm'))
 
 
 class TestDataObject:
@@ -303,6 +307,31 @@ def genetic_algorithm_impl_test():
     #     print(p)
 
 
+def data_cy_test():
+    from genetic_algorithm.data_cy import CyData
+
+    d1 = CyData(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+    print(d1)
+    print(d1.temperature)
+
+
+def genotype_cy_test():
+    from genetic_algorithm.genotype_cy import CyGenotype as Genotype
+
+    g1 = Genotype(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+    g2 = Genotype.get_random_genotype()
+    print(g1)
+    print(g2)
+
+
+def phenotype_cy_test():
+    from genetic_algorithm.phenotype_cy import CyPhenotype, Phenotype
+
+    p1 = Phenotype()
+    # p1.
+    print(p1)
+
+
 if __name__ == '__main__':
     # data_mapper_test()
     # training_data_test()
@@ -314,4 +343,7 @@ if __name__ == '__main__':
     # training_data_test()
     # genotype_test()
     # phenotype_test()
-    genetic_algorithm_impl_test()
+    # genetic_algorithm_impl_test()
+    data_cy_test()
+    genotype_cy_test()
+    phenotype_cy_test()

@@ -1,4 +1,8 @@
 import os
+import sys
+
+sys.path.append(os.path.abspath("."))
+sys.path.append(os.path.join(os.path.abspath("."), 'genetic_algorithm'))
 
 from data.data_connector import DataConnectorFactory
 from data.data_mapper import DataMapper
@@ -40,7 +44,7 @@ def main():
     while not dc:
         dc = get_data_connector()
 
-    g = GeneticAlgorithmImpl(dc, population_size, max_generation)
+    g = GeneticAlgorithmImpl(dc, population_size, max_generation=10)
     g.run()
 
 

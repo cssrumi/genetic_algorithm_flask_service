@@ -1,6 +1,7 @@
 import random
 
-from data.data import Data
+# from data.data import Data
+from genetic_algorithm.data_cy import CyData as Data
 from data.data_mapper import DataMapper
 
 
@@ -12,6 +13,6 @@ class Genotype(Data):
 
     @staticmethod
     def get_random_genotype(_from=-1, _to=1):
-        return Genotype(
-            *[random.uniform(_from, _to) for _ in Genotype.gen_list]
+        return __class__(
+            *[random.uniform(_from, _to) for _ in __class__.gen_list]
         )

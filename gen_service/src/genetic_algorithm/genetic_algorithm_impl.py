@@ -20,6 +20,7 @@ class GeneticAlgorithmImpl:
         if self.max_generation is not None:
             for _ in range(self.max_generation):
                 self.population.evolve()
+                print(self.population.get_best())
         else:
             while True:
                 self.population.evolve()

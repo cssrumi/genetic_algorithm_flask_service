@@ -19,3 +19,9 @@ def timer(func):
         return rv
 
     return wrapper
+
+
+def not_implemented(func):
+    def wrapper(*_, **__):
+        raise TypeError('Not implemented : {}'.format(func.__name__))
+    return wrapper

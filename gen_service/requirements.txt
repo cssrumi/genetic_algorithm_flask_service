@@ -1,4 +1,5 @@
-cython
+Cython
+numpy
 Flask
 pymongo
 python-interface

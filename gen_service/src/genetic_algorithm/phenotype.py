@@ -38,11 +38,17 @@ class Phenotype:
             for g in gen[:Genotype.mid_gen]:
                 child_genes[g] = random.uniform(-1, 1)
 
-        return Phenotype(Genotype(**child_genes))
+        return self.__class__(Genotype(**child_genes))
 
     def mutate(self):
         if random.uniform(0, 1) <= 0.65:
             return True
+
+    def calculate_fitness_cy(self, td: TrainingData):
+        result = 0
+        for k, v in self.genotype.__dict__.items():
+            result += v * td.__dict__.get(k)
+        return abs(td.pm10_after_24h - result)
 
     def calculate_fitness(self, td: TrainingData):
         result = sum([value*td.__dict__[key] for key, value in self.genotype.__dict__.items()])
