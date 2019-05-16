@@ -1,7 +1,7 @@
 import random
 
-from data.data import Data
-# from genetic_algorithm.data_cy import CyData as Data
+# from data.data import Data
+from genetic_algorithm.data_cy import CyData as Data
 # from genetic_algorithm.data_cy import Data
 from data.data_mapper import DataMapper
 
