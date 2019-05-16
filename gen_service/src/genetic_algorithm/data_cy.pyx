@@ -24,7 +24,7 @@ cdef class CyData:
         self._dew_point = <long double> dew_point
         self._pressure = <long double> pressure
         self._KEYS = ['date_time', 'pm10', 'wind_direction', 'wind',
-                        'temperature', 'humidity', 'dew_point', 'pressure']
+                      'temperature', 'humidity', 'dew_point', 'pressure']
 
     property date_time:
         def __get__(self):
@@ -64,13 +64,42 @@ cdef class CyData:
 
     def __reduce__(self):
         return (self.__class__, (self.date_time, self.pm10, self.wind_direction, self.wind,
-                      self.temperature, self.humidity, self.dew_point, self.pressure))
+                                 self.temperature, self.humidity, self.dew_point, self.pressure))
 
     def __repr__(self):
         return '<' + self.__class__.__name__ + '(' + \
                ','.join([key + '=' + str(getattr(self, key)) for key in self._KEYS]) + \
                ')>'
 
+cdef class Data:
+    cdef long double date_time
+    cdef long double pm10
+    cdef long double wind_direction
+    cdef long double wind
+    cdef long double temperature
+    cdef long double humidity
+    cdef long double dew_point
+    cdef long double pressure
+    cdef list KEYS
 
-# class Data(CyData):
-#     pass
+    def __init__(self, date_time, pm10, wind_direction, wind,
+                 temperature, humidity, dew_point, pressure):
+        self.date_time = <long double> date_time
+        self.pm10 = <long double> pm10
+        self.wind_direction = <long double> wind_direction
+        self.wind = <long double> wind
+        self.temperature = <long double> temperature
+        self.humidity = <long double> humidity
+        self.dew_point = <long double> dew_point
+        self.pressure = <long double> pressure
+        self.KEYS = ['date_time', 'pm10', 'wind_direction', 'wind',
+                     'temperature', 'humidity', 'dew_point', 'pressure']
+
+    def __reduce__(self):
+        return (self.__class__, (self.date_time, self.pm10, self.wind_direction, self.wind,
+                                 self.temperature, self.humidity, self.dew_point, self.pressure))
+
+    def __repr__(self):
+        return '<' + self.__class__.__name__ + '(' + \
+               ','.join([key + '=' + str(getattr(self, key)) for key in self.KEYS]) + \
+               ')>'
