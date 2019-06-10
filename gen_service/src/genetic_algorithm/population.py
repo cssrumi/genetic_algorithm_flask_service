@@ -1,3 +1,4 @@
+import math
 import os
 import random
 
@@ -36,7 +37,7 @@ class Population:
     def set_evolution_type(self, evolution_type):
         evolution_type = str(evolution_type).lower()
         evolution_types = {
-            'default': self._evolve_by_one_tenth,
+            'default': self._evolve_by_rank,
             'ten_percent': self._evolve_by_one_tenth,
             'roulette': self._evolve_by_roulette,
             'rank': self._evolve_by_rank,
@@ -60,29 +61,69 @@ class Population:
                 children.append(mother.crossover(father))
         self.population.extend(self.calculate_fitness(children))
 
-    @not_implemented
+    # @not_implemented
     def _evolve_by_tournament(self):
+        how_many = int(math.sqrt(self.population_size))
+        parents = []
+        children = []
+        for _ in range(how_many):
+            self._shuffle()
+            parents.append(min(self.population[:how_many]))
+        for mother in parents:
+            for father in parents:
+                children.append(mother.crossover(father))
         self._decrement_population()
-        self._shuffle()
+        self.population.extend(self.calculate_fitness(children))
 
-    @not_implemented
+    def _get_parent_id(self, rank_list):
+        for _ in range(self.population_size):
+            random_rank = random.uniform(0, 1)
+            for i, rank in enumerate(rank_list):
+                if rank > random_rank:
+                    return i
+        return -1
+
+    # @not_implemented
     def _evolve_by_rank(self):
+        self._sort(reverse=True)
+        rank_list = []
+        children = []
+        population_size = len(self.population)
+        for i, phenotype in enumerate(self.population, 1):
+            rank_list.append(i / population_size)
+        for _ in range(self.population_size):
+            mother = self.population[self._get_parent_id(rank_list)]
+            father = self.population[self._get_parent_id(rank_list)]
+            children.append(mother.crossover(father))
         self._decrement_population()
-        self._sort()
+        self.population.extend(self.calculate_fitness(children))
 
-    @not_implemented
+    # @not_implemented
     def _evolve_by_roulette(self):
+        self._sort(reverse=True)
+        chance_list = []
+        children = []
+        fitness_sum = sum(map(lambda individual: individual.fitness, self.population))
+        for i in range(1, len(self.population) + 1):
+            chance_list.append(sum(map(lambda individual: individual.fitness, self.population[:i])) / fitness_sum)
+        for _ in range(self.population_size):
+            mother = self.population[self._get_parent_id(chance_list)]
+            father = self.population[self._get_parent_id(chance_list)]
+            children.append(mother.crossover(father))
         self._decrement_population()
-        self._sort()
+        self.population.extend(self.calculate_fitness(children))
 
-    def _sort(self):
-        self.population.sort(key=lambda i: i.fitness, reverse=False)
+    def _sort(self, reverse=False):
+        self.population.sort(key=lambda i: i.fitness, reverse=reverse)
 
     def _shuffle(self):
         random.shuffle(self.population)
 
-    def _calc_best_ten_percent(self):
-        self.bests = self.population[:self.one_tenth]
+    def _calc_best_ten_percent(self, reverse=False):
+        if reverse:
+            self.bests = self.population[self.population_size - self.one_tenth:]
+        else:
+            self.bests = self.population[:self.one_tenth]
 
     def _decrement_population(self):
         for individual in self.population:
