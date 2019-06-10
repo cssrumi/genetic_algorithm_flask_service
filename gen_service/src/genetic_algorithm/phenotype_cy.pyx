@@ -8,9 +8,9 @@ import random
 from data.training_data import TrainingData
 # from genotype_cy cimport CyGenotype as Genotype
 # cimport genotype_cy
-from genetic_algorithm.genotype import Genotype
 # from genotype_cy import Genotype
-# from genetic_algorithm.genotype_cy import get_random_genotype, CyGenotype as Genotype
+from genetic_algorithm.genotype import Genotype
+# from genetic_algorithm.genotype_cy import Genotype
 
 
 cdef class CyPhenotype:
@@ -41,9 +41,9 @@ cdef class CyPhenotype:
         cdef object g
         for i in range(Genotype.gen_len):
             if i > mid:
-                child_genes[gen[i]] = self.genotype.__dict__[gen[i]]
+                child_genes[gen[i]] = getattr(self.genotype, gen[i])
             else:
-                child_genes[gen[i]] = other.genotype.__dict__[gen[i]]
+                child_genes[gen[i]] = getattr(other.genotype, gen[i])
         if self.mutate():
             random.shuffle(gen)
             for g in gen[:self.genotype.mid_gen]:

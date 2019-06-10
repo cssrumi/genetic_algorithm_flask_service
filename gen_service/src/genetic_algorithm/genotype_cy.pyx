@@ -3,12 +3,11 @@ import random
 # import os
 # sys.path.append(os.path.abspath("."))
 # sys.path.append(os.path.abspath("../"))
-cimport data_cy
-import data_cy
+from data_cy cimport Data
 
 from data.data_mapper import DataMapper
 
-cdef class CyGenotype(data_cy.CyData):
+cdef class CyGenotype(Data):
     gen_list = list(DataMapper.get_default_mapping().keys())
     gen_len = len(gen_list)
     mid_gen = int(gen_len / 2)
