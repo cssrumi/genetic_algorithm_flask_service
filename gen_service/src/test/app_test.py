@@ -262,9 +262,9 @@ def genotype_test():
 def phenotype_test():
     from genetic_algorithm.phenotype import Phenotype
     p1 = Phenotype()
-    p1.vitality -= 1
-    assert Phenotype.VITALITY is not p1.vitality, "shallow copy"
-    print(Phenotype.VITALITY, p1.vitality)
+    p1.generations -= 1
+    assert Phenotype.VITALITY is not p1.generations, "shallow copy"
+    print(Phenotype.VITALITY, p1.generations)
 
     p2 = Phenotype()
     p3 = p1.crossover(p2)

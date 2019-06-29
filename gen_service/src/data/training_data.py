@@ -1,10 +1,23 @@
+from typing import List
+
 from data.data import Data
 from decorators import timer
 import datetime
 
 
+class TrainingData(Data):
+    def __init__(self, data, pm10_after_24h):
+        self.__dict__.update(data.__dict__)
+        self.pm10_after_24h = pm10_after_24h
+
+    def __repr__(self):
+        return '<' + self.__class__.__name__ + '(' + \
+               ','.join([key + '=' + str(value) for key, value in self.__dict__.items()]) + \
+               ')>'
+
+
 @timer
-def create_training_data(data):
+def create_training_data(data) -> List[TrainingData]:
     def dtfts(date):
         return datetime.datetime.fromtimestamp(date)
 
@@ -48,14 +61,3 @@ def create_training_data(data):
         if d_after_24h:
             td.append(TrainingData(d, d_after_24h.pm10))
     return td
-
-
-class TrainingData(Data):
-    def __init__(self, data, pm10_after_24h):
-        self.__dict__.update(data.__dict__)
-        self.pm10_after_24h = pm10_after_24h
-
-    def __repr__(self):
-        return '<' + self.__class__.__name__ + '(' + \
-               ','.join([key + '=' + str(value) for key, value in self.__dict__.items()]) + \
-               ')>'

@@ -11,19 +11,35 @@ from multiprocessing import cpu_count
 class Population:
     _cpu_count = cpu_count()
 
-    def __init__(self, population_size, training_data):
+    def __init__(self, population_size, training_data, pass_best=True, vitality=3):
         self.population_size = population_size
-        # self.one_tenth = int(population_size / 10) * Phenotype.VITALITY
-        self.one_tenth = int(population_size / 10)
+        self._sqrt_of_population_size = int(math.sqrt(population_size))
         self.training_data = training_data
+        self._pass_best = pass_best
+        self._vitality = vitality
         self.population = []
         self.bests = []
-        self.evolve = self.set_evolution_type(
-            os.getenv('EVOLUTION_TYPE', 'default'))
+
+        self.evolution_types = {
+            'default': self._evolve_by_rank,
+            'crossing_bests': self._evolve_crossing_bests,
+            'roulette': self._evolve_by_roulette,
+            'rank': self._evolve_by_rank,
+            'ranks': self._evolve_by_rank,
+            'tournament': self._evolve_by_tournament,
+        }
+
+        self._evolve = self.get_evolution_type(
+            os.getenv('EVOLUTION_TYPE', 'default')
+        )
         self.populate()
 
     def add(self, individual):
         self.population.append(individual)
+
+    def clear(self):
+        self.population = []
+        self.bests = []
 
     def populate(self):
         new_population = []
@@ -34,26 +50,28 @@ class Population:
     def get_best(self):
         return min(self.population, key=lambda i: i.fitness)
 
-    def set_evolution_type(self, evolution_type):
-        evolution_type = str(evolution_type).lower()
-        evolution_types = {
-            'default': self._evolve_by_rank,
-            'ten_percent': self._evolve_by_one_tenth,
-            'roulette': self._evolve_by_roulette,
-            'rank': self._evolve_by_rank,
-            'ranks': self._evolve_by_rank,
-            'tournament': self._evolve_by_tournament,
-        }
-        if evolution_type not in evolution_types.keys():
+    def get_evolution_type(self, evolution_type):
+        evolution_type = str(evolution_type).lower().replace(' ', '_')
+
+        if evolution_type not in self.evolution_types.keys():
             print('Invalid evolution type : {}\n'
                   'Evolution type is set to default'
                   .format(evolution_type))
-        default = evolution_types.get('default')
-        return evolution_types.get(evolution_type, default)
+        default = self.evolution_types.get('default')
+        return self.evolution_types.get(evolution_type, default)
 
-    def _evolve_by_one_tenth(self):
+    def evolve(self):
+        if self._pass_best:
+            best = self.get_best()
+            self._evolve()
+            best.generations = 0
+            self.population.append(best)
+        else:
+            self._evolve()
+
+    def _evolve_crossing_bests(self):
         self._sort()
-        self._calc_best_ten_percent()
+        self._calc_bests()
         self._decrement_population()
         children = []
         for mother in self.bests:
@@ -63,12 +81,15 @@ class Population:
 
     # @not_implemented
     def _evolve_by_tournament(self):
-        how_many = int(math.sqrt(self.population_size))
         parents = []
         children = []
-        for _ in range(how_many):
+        for _ in range(self._sqrt_of_population_size):
             self._shuffle()
-            parents.append(min(self.population[:how_many]))
+            parents.append(
+                min(
+                    self.population[:self._sqrt_of_population_size],
+                    key=lambda i: i.fitness)
+            )
         for mother in parents:
             for father in parents:
                 children.append(mother.crossover(father))
@@ -89,8 +110,9 @@ class Population:
         rank_list = []
         children = []
         population_size = len(self.population)
+        rank_sum = population_size * (population_size + 1) / 2
         for i, phenotype in enumerate(self.population, 1):
-            rank_list.append(i / population_size)
+            rank_list.append(sum(range(1, i + 1)) / rank_sum)
         for _ in range(self.population_size):
             mother = self.population[self._get_parent_id(rank_list)]
             father = self.population[self._get_parent_id(rank_list)]
@@ -119,20 +141,20 @@ class Population:
     def _shuffle(self):
         random.shuffle(self.population)
 
-    def _calc_best_ten_percent(self, reverse=False):
+    def _calc_bests(self, reverse=False):
         if reverse:
-            self.bests = self.population[self.population_size - self.one_tenth:]
+            self.bests = self.population[self.population_size - self._sqrt_of_population_size:]
         else:
-            self.bests = self.population[:self.one_tenth]
+            self.bests = self.population[:self._sqrt_of_population_size]
 
     def _decrement_population(self):
         for individual in self.population:
-            individual.vitality -= 1
+            individual.generations += 1
 
         self.population = [
             individual
             for individual in self.population
-            if individual.vitality > 0
+            if individual.generations <= self._vitality
         ]
 
     def calculate_fitness(self, population):
@@ -179,3 +201,6 @@ class Population:
                   .format(calculation_type))
         default = calculation_types.get('default')
         return calculation_types.get(calculation_type, default)
+
+    def get_unique_evolution_types(self):
+        return set(map(lambda key_value: key_value[1], list(self.evolution_types.items())))

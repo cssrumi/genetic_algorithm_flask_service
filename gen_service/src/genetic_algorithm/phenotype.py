@@ -6,14 +6,9 @@ from genetic_algorithm.genotype import Genotype
 
 
 class Phenotype:
-    try:
-        VITALITY = int(os.getenv('VITALITY', 3))
-    except (ValueError, TypeError):
-        VITALITY = 3
-
     def __init__(self, genotype=None):
         self.fitness = None
-        self.vitality = Phenotype.VITALITY
+        self.generations = 0
 
         if genotype is not None:
             self.genotype = genotype

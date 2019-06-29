@@ -24,4 +24,15 @@ def timer(func):
 def not_implemented(func):
     def wrapper(*_, **__):
         raise TypeError('Not implemented : {}'.format(func.__name__))
+
+    return wrapper
+
+
+def until_not_none(func):
+    def wrapper(*args, **kwargs):
+        rv = func(*args, **kwargs)
+        while not rv:
+            rv = func(*args, **kwargs)
+        return rv
+
     return wrapper

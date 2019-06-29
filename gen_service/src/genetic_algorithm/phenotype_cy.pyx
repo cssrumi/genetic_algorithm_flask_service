@@ -14,16 +14,11 @@ from genetic_algorithm.genotype import Genotype
 
 
 cdef class CyPhenotype:
-    try:
-        VITALITY = int(os.getenv('VITALITY', 3))
-    except (ValueError, TypeError):
-        VITALITY = 3
-
     def __init__(self, genotype=None):
         self.fitness = None
-        self.vitality = CyPhenotype.VITALITY
+        self.generations = 0
         self.genotype = genotype if genotype else self.init_random_genes()
-        self._KEYS = ['fitness', 'vitality', 'genotype']
+        self._KEYS = ['fitness', 'generations', 'genotype']
 
     property KEYS:
         def __get__(self):
@@ -56,10 +51,41 @@ cdef class CyPhenotype:
             return True
         return False
 
+    cpdef long double calculate_pm10(self, object td: TrainingData):
+        cdef long double result = sum(
+            [value*td.__dict__[key] for key, value in self.genotype.__dict__.items()])
+        return result
+
     cpdef long double calculate_fitness(self, object td: TrainingData):
         cdef long double result = sum(
             [value*td.__dict__[key] for key, value in self.genotype.__dict__.items()])
         return abs(td.pm10_after_24h - result)
+
+
+    cpdef to_dict(self):
+        dct = {}
+        for key in self._KEYS:
+            if key == 'genotype':
+                dct[key] = vars(self.genotype)
+            else:
+                dct[key] = getattr(self, key)
+        print(dct)
+        return dct
+
+    @classmethod
+    def from_dict(cls, dct: dict):
+        genotype_dict = dct.get('genotype', None)
+        genotype = Genotype(**genotype_dict.items())
+        print(cls.__name__)
+        phenotype = cls(genotype)
+        for key in phenotype.KEYS:
+            if key == 'genotype':
+                continue
+            value = dct.get(key)
+            if value:
+                setattr(phenotype, key, value)
+        return phenotype
+
 
     def __repr__(self):
         return '<' + self.__class__.__name__ + '(' + \
