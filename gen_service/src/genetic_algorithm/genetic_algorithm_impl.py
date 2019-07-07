@@ -7,6 +7,7 @@ from genetic_algorithm.population import Population
 class GeneticAlgorithmImpl:
     def __init__(self, data_connector, population_size=100, max_generation=None, time_interval=None, time_unit='h',
                  vitality=3, pass_best=True):
+        self.population_size = population_size
         self.data_connector = data_connector
         self.max_generation = max_generation
         self.time_interval = time_interval
@@ -14,8 +15,19 @@ class GeneticAlgorithmImpl:
         self.vitality = vitality
         self.time_unit = str(time_unit).lower()
         self.training_data = self.get_training_data()
-        self.population = Population(population_size, self.training_data, vitality=self.vitality,
+        self.population = Population(self.population_size, self.training_data, vitality=self.vitality,
                                      pass_best=self.pass_best)
+
+    def recreate_population(self):
+        self.population.clear()
+        self.population.populate()
+
+    def create_new_population(self):
+        self.population = Population(self.population_size, self.training_data, vitality=self.vitality,
+                                     pass_best=self.pass_best)
+
+    def change_evolution_type(self, evolution_type: str):
+        self.population._evolve = self.population.get_evolution_type(evolution_type)
 
     def get_training_data(self, quantity='ALL'):
         data = self.data_connector.get_data(quantity)
@@ -36,7 +48,7 @@ class GeneticAlgorithmImpl:
         )
         sum_of_relative_errors = sum((abs(re) for re in relative_errors))
 
-        measurement_error = (1/len(self.training_data)) * sum_of_relative_errors
+        measurement_error = (1 / len(self.training_data)) * sum_of_relative_errors
 
         return measurement_error
 
@@ -55,6 +67,8 @@ class GeneticAlgorithmImpl:
         return time_units.get(self.time_unit.lower())
 
     def run(self):
+        if not self.population:
+            self.recreate_population()
         if self.max_generation:
             for _ in range(self.max_generation):
                 self.population.evolve()

@@ -120,7 +120,6 @@ class Population:
         self._decrement_population()
         self.population.extend(self.calculate_fitness(children))
 
-    # @not_implemented
     def _evolve_by_roulette(self):
         self._sort(reverse=True)
         chance_list = []
@@ -203,4 +202,14 @@ class Population:
         return calculation_types.get(calculation_type, default)
 
     def get_unique_evolution_types(self):
-        return set(map(lambda key_value: key_value[1], list(self.evolution_types.items())))
+        function_types = set(map(lambda key_value: key_value[1], list(self.evolution_types.items())))
+        keys = list(self.evolution_types.keys())
+        unique_keys = []
+        if 'default' in keys:
+            keys.remove('default')
+        for key in keys:
+            e_type = self.evolution_types.get(key)
+            if e_type in function_types:
+                unique_keys.append(key)
+                function_types.remove(e_type)
+        return unique_keys
