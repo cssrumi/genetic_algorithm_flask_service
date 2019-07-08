@@ -23,9 +23,9 @@ class App:
         self.time_unit = os.getenv('TIME_UNIT', 'h')
         self._bootstrap = App.get_as_boolean('BOOTSTRAP', False)
 
-        self.save_interval_types = ('time', 'generation')
+        self._save_interval_types = ('time', 'generation')
         self.save_interval_type = os.getenv('SAVE_INTERVAL_TYPE', 'time')
-        if self.save_interval_type.lower() not in self.save_interval_types:
+        if self.save_interval_type.lower() not in self._save_interval_types:
             self.save_interval_type = 'time'
 
         self.dc = App.get_data_connector()
@@ -98,16 +98,24 @@ class Test(App):
         super().__init__()
         self.results = {}
 
+    def get_params(self):
+        params = {}
+        for key, value in vars(self).items():
+            if key[0] != '_' and isinstance(value, (bool, str, int, float)):
+                params[key] = value
+        print(params)
+        return params
+
     def test_evolution_types(self):
         types = self.genetic_algorithm.population.get_unique_evolution_types()
-        print(types)
         for t in types:
             self.recreate_genetic_algorithm()
             type_name = t
             self.genetic_algorithm.change_evolution_type(t)
             best = self.run()
             measurement_error = self.genetic_algorithm.calculate_measurement_error(best)
-            best_dict = {'phenotype': best.to_dict(), 'measurement_error': measurement_error}
+            best_dict = {'phenotype': best.to_dict(), 'measurement_error': measurement_error,
+                         'params': self.get_params()}
             self.results[type_name] = best_dict
 
     def save_results(self, filename='results.json'):
@@ -125,7 +133,7 @@ def main():
 
 def test():
     test = Test()
-    test.time_interval = 20
+    test.time_interval = 2
     test.time_unit = 's'
     test.test_evolution_types()
     test.save_results()
