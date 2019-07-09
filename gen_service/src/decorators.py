@@ -9,6 +9,15 @@ def print_generator(func):
     return wrapper
 
 
+def logger(func):
+    def wrapper(*args, **kwargs):
+        rv = func(*args, **kwargs)
+        print(rv)
+        return rv
+
+    return wrapper
+
+
 def timer(func):
     def wrapper(*args, **kwargs):
         before = clock()

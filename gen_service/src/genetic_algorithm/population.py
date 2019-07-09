@@ -1,10 +1,11 @@
 import math
 import os
 import random
+from typing import List
 
 from genetic_algorithm.phenotype_cy import Phenotype
 # from genetic_algorithm.phenotype import Phenotype
-from decorators import timer, not_implemented
+from decorators import timer, not_implemented, logger
 from multiprocessing import cpu_count
 
 
@@ -79,7 +80,6 @@ class Population:
                 children.append(mother.crossover(father))
         self.population.extend(self.calculate_fitness(children))
 
-    # @not_implemented
     def _evolve_by_tournament(self):
         parents = []
         children = []
@@ -104,7 +104,6 @@ class Population:
                     return i
         return -1
 
-    # @not_implemented
     def _evolve_by_rank(self):
         self._sort(reverse=True)
         rank_list = []
@@ -174,7 +173,7 @@ class Population:
         individual.fitness = sum((individual.calculate_fitness(t) for t in self.training_data))
         return individual
 
-    @timer
+    # @timer
     def _calculate_fitness_in_parallel(self, population):
         from multiprocessing import Pool
 
@@ -201,7 +200,7 @@ class Population:
         default = calculation_types.get('default')
         return calculation_types.get(calculation_type, default)
 
-    def get_unique_evolution_types(self):
+    def get_unique_evolution_types(self) -> List[str]:
         function_types = set(map(lambda key_value: key_value[1], list(self.evolution_types.items())))
         keys = list(self.evolution_types.keys())
         unique_keys = []

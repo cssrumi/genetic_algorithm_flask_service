@@ -72,7 +72,6 @@ class GeneticAlgorithmImpl:
         if self.max_generation:
             for _ in range(self.max_generation):
                 self.population.evolve()
-                print(self.population.get_best())
             return self.population.get_best()
         elif self.time_interval:
             now = datetime.datetime.now()
@@ -80,9 +79,7 @@ class GeneticAlgorithmImpl:
             while now < timer:
                 self.population.evolve()
                 now = datetime.datetime.now()
-                print(self.population.get_best())
             return self.population.get_best()
         else:
             while True:
                 self.population.evolve()
-                print(self.population.get_best())
