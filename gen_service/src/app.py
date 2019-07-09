@@ -146,8 +146,8 @@ def main():
 
 def test():
     test = Test()
-    test.time_interval = 4
-    test.time_unit = 's'
+    test.time_interval = 12
+    test.time_unit = 'h'
     test.test_evolution_types()
     test.sort_results()
     test.save_results()
