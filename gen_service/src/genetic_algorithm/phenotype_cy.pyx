@@ -69,7 +69,6 @@ cdef class CyPhenotype:
                 dct[key] = vars(self.genotype)
             else:
                 dct[key] = getattr(self, key)
-        print(dct)
         return dct
 
     @classmethod

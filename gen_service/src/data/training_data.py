@@ -16,7 +16,7 @@ class TrainingData(Data):
                ')>'
 
 
-@timer
+# @timer
 def create_training_data(data) -> List[TrainingData]:
     def dtfts(date):
         return datetime.datetime.fromtimestamp(date)

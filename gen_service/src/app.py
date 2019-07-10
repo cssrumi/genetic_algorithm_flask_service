@@ -104,7 +104,7 @@ class Test(App):
                 params[key] = value
         return params
 
-    # @logger
+    @logger
     def get_result(self, evolution_type: str) -> dict:
         self.recreate_genetic_algorithm()
         type_name = evolution_type
