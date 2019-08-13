@@ -1,8 +1,7 @@
-import os
 import random
 
 from data.training_data import TrainingData
-from genetic_algorithm.genotype import Genotype
+from genetic_algorithm.old.genotype import Genotype
 
 
 class Phenotype:
@@ -10,7 +9,7 @@ class Phenotype:
         self.fitness = None
         self.generations = 0
 
-        if genotype is not None:
+        if genotype:
             self.genotype = genotype
         else:
             self.init_random_genes()

@@ -1,30 +1,32 @@
 import datetime
 
+from config import Config
+from data.data_mapper import DataMapper
 from data.training_data import create_training_data
+from genetic_algorithm.individual import Individual
 from genetic_algorithm.population import Population
 
 
 class GeneticAlgorithmImpl:
-    def __init__(self, data_connector, population_size=100, max_generation=None, time_interval=None, time_unit='h',
-                 vitality=3, pass_best=True):
-        self.population_size = population_size
+    def __init__(self, data_connector, cfg: Config):
         self.data_connector = data_connector
-        self.max_generation = max_generation
-        self.time_interval = time_interval
-        self.pass_best = pass_best
-        self.vitality = vitality
-        self.time_unit = str(time_unit).lower()
+        self.cfg = cfg
         self.training_data = self.get_training_data()
-        self.population = Population(self.population_size, self.training_data, vitality=self.vitality,
-                                     pass_best=self.pass_best)
+        self.init_individual()
+        self.population = Population(self.cfg, self.training_data)
+
+    @staticmethod
+    def init_individual():
+        dm = DataMapper.get_default_mapping()
+        keys = list(dm.keys())
+        Individual.set_gen_list(keys)
 
     def recreate_population(self):
         self.population.clear()
         self.population.populate()
 
     def create_new_population(self):
-        self.population = Population(self.population_size, self.training_data, vitality=self.vitality,
-                                     pass_best=self.pass_best)
+        self.population = Population(self.cfg, self.training_data)
 
     def change_evolution_type(self, evolution_type: str):
         self.population._evolve = self.population.get_evolution_type(evolution_type)
@@ -37,13 +39,22 @@ class GeneticAlgorithmImpl:
         data = self.data_connector.get_data(quantity)
         self.population.training_data.append(data)
 
-    @staticmethod
-    def calculate_relative_error(phenotype, td):
-        return (td.pm10_after_24h - phenotype.calculate_pm10(td)) / td.pm10_after_24h
+    def set_mutation_rate(self, individual: Individual):
+        mutation_chance = self.calculate_mutation_chance(individual)
+        Individual.set_mutation_chance(mutation_chance)
 
-    def calculate_measurement_error(self, phenotype) -> float:
+    def calculate_mutation_chance(self, individual: Individual) -> (float, int):
+        measurement_error = self.calculate_measurement_error(individual)
+        mutation_chance = measurement_error / 10
+        return mutation_chance
+
+    @staticmethod
+    def calculate_relative_error(individual: Individual, td):
+        return (td.pm10_after_24h - individual.calculate_pm10(td)) / td.pm10_after_24h
+
+    def calculate_measurement_error(self, individual: Individual) -> float:
         relative_errors = (
-            __class__.calculate_relative_error(phenotype, td)
+            __class__.calculate_relative_error(individual, td)
             for td in self.training_data
         )
         sum_of_relative_errors = sum((abs(re) for re in relative_errors))
@@ -54,32 +65,38 @@ class GeneticAlgorithmImpl:
 
     def get_timer(self):
         now = datetime.datetime.now()
-        if not self.time_interval:
-            self.time_interval = 60
-            self.time_unit = 's'
+        if not self.cfg.time_interval:
+            self.cfg.time_interval = 60
+            self.cfg.time_unit = 's'
 
         time_units = {
-            'h': now + datetime.timedelta(hours=self.time_interval),
-            'min': now + datetime.timedelta(minutes=self.time_interval),
-            's': now + datetime.timedelta(seconds=self.time_interval),
+            'h': now + datetime.timedelta(hours=self.cfg.time_interval),
+            'min': now + datetime.timedelta(minutes=self.cfg.time_interval),
+            's': now + datetime.timedelta(seconds=self.cfg.time_interval),
         }
 
-        return time_units.get(self.time_unit.lower())
+        if self.cfg.time_unit not in list(time_units.keys()):
+            self.cfg.time_unit = 'h'
+
+        return time_units.get(self.cfg.time_unit.lower())
 
     def run(self):
         if not self.population:
             self.recreate_population()
-        if self.max_generation:
-            for _ in range(self.max_generation):
+        if self.cfg.max_generation:
+            for _ in range(self.cfg.max_generation):
                 self.population.evolve()
+                self.set_mutation_rate(self.population.get_current_best())
             return self.population.get_best()
-        elif self.time_interval:
+        elif self.cfg.time_interval:
             now = datetime.datetime.now()
             timer = self.get_timer()
             while now < timer:
                 self.population.evolve()
+                self.set_mutation_rate(self.population.get_current_best())
                 now = datetime.datetime.now()
             return self.population.get_best()
         else:
             while True:
                 self.population.evolve()
+                self.set_mutation_rate(self.population.get_current_best())

@@ -3,7 +3,6 @@ import random
 # import os
 # sys.path.append(os.path.abspath("."))
 # sys.path.append(os.path.abspath("../"))
-cimport data_cy
 import data_cy
 
 from data.data_mapper import DataMapper

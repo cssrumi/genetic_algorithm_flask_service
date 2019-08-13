@@ -253,14 +253,14 @@ def training_data_test():
 
 
 def genotype_test():
-    from genetic_algorithm.genotype import Genotype
+    from genetic_algorithm.old.genotype import Genotype
     print(Genotype.gen_list)
     g = Genotype.get_random_genotype()
     print(g)
 
 
 def phenotype_test():
-    from genetic_algorithm.phenotype import Phenotype
+    from genetic_algorithm.old.phenotype import Phenotype
     p1 = Phenotype()
     p1.generations -= 1
     assert Phenotype.VITALITY is not p1.generations, "shallow copy"
@@ -275,7 +275,7 @@ def phenotype_test():
 
 def genetic_algorithm_impl_test():
     from genetic_algorithm.genetic_algorithm_impl import GeneticAlgorithmImpl
-    from genetic_algorithm.phenotype import Phenotype
+    from genetic_algorithm.old.phenotype import Phenotype
     from data.data_connector import DataConnectorFactory
     from data.data_mapper import DataMapper
     from data.db.db_param import DBParam
@@ -325,7 +325,7 @@ def genotype_cy_test():
 
 
 def phenotype_cy_test():
-    from genetic_algorithm.phenotype_cy import CyPhenotype, Phenotype
+    from genetic_algorithm.phenotype_cy import Phenotype
 
     p1 = Phenotype()
     # p1.

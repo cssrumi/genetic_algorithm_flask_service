@@ -3,23 +3,27 @@ import os
 import random
 from typing import List
 
-from genetic_algorithm.phenotype_cy import Phenotype
-# from genetic_algorithm.phenotype import Phenotype
+from config import Config
 from decorators import timer, not_implemented, logger
 from multiprocessing import cpu_count
 
+from genetic_algorithm.individual import Individual
+
 
 class Population:
-    _cpu_count = cpu_count()
+    # _cpu_count = cpu_count()
+    _cpu_count = 1
 
-    def __init__(self, population_size, training_data, pass_best=True, vitality=3):
-        self.population_size = population_size
-        self._sqrt_of_population_size = int(math.sqrt(population_size))
+    def __init__(self, cfg: Config, training_data):
+        self.cfg = cfg
+        self.population_size = cfg.population_size
+        self._sqrt_of_population_size = int(math.sqrt(cfg.population_size))
         self.training_data = training_data
-        self._pass_best = pass_best
-        self._vitality = vitality
+        self._pass_best = cfg.pass_best
+        self._max_vitality = cfg.max_vitality
         self.population = []
         self.bests = []
+        self.best = None
 
         self.evolution_types = {
             'default': self._evolve_by_rank,
@@ -45,11 +49,21 @@ class Population:
     def populate(self):
         new_population = []
         for _ in range(self.population_size):
-            new_population.append(Phenotype())
+            new_population.append(Individual())
         self.population.extend(self.calculate_fitness(new_population))
 
-    def get_best(self):
+    def get_current_best(self) -> Individual:
         return min(self.population, key=lambda i: i.fitness)
+
+    def get_best(self) -> Individual:
+        return self.best
+
+    def set_best(self, individual: Individual):
+        if not self.best:
+            self.best = individual
+            return None
+        if individual.fitness < self.best.fitness:
+            self.best = individual
 
     def get_evolution_type(self, evolution_type):
         evolution_type = str(evolution_type).lower().replace(' ', '_')
@@ -61,15 +75,18 @@ class Population:
         default = self.evolution_types.get('default')
         return self.evolution_types.get(evolution_type, default)
 
+    @timer
     def evolve(self):
-        if self._pass_best:
+        if self._pass_best and self.get_best():
             best = self.get_best()
             self._evolve()
-            best.generations = 0
+            best.vitality = 0
             self.population.append(best)
         else:
             self._evolve()
+        self.set_best(self.get_current_best())
 
+    @not_implemented
     def _evolve_crossing_bests(self):
         self._sort()
         self._calc_bests()
@@ -80,16 +97,25 @@ class Population:
                 children.append(mother.crossover(father))
         self.population.extend(self.calculate_fitness(children))
 
+    @not_implemented
     def _evolve_by_tournament(self):
         parents = []
         children = []
-        for _ in range(self._sqrt_of_population_size):
-            self._shuffle()
-            parents.append(
-                min(
-                    self.population[:self._sqrt_of_population_size],
-                    key=lambda i: i.fitness)
-            )
+        self._shuffle()
+        max_size = self._sqrt_of_population_size
+        for index in range(max_size):
+            if index+1 != max_size:
+                parents.append(
+                    min(
+                        self.population[index*max_size:(index+1)*max_size],
+                        key=lambda i: i.fitness)
+                )
+            else:
+                parents.append(
+                    min(
+                        self.population[index*max_size:],
+                        key=lambda i: i.fitness)
+                )
         for mother in parents:
             for father in parents:
                 children.append(mother.crossover(father))
@@ -112,20 +138,29 @@ class Population:
         rank_sum = population_size * (population_size + 1) / 2
         for i, phenotype in enumerate(self.population, 1):
             rank_list.append(sum(range(1, i + 1)) / rank_sum)
-        for _ in range(self.population_size):
-            mother = self.population[self._get_parent_id(rank_list)]
-            father = self.population[self._get_parent_id(rank_list)]
-            children.append(mother.crossover(father))
+
+        max_len = self.cfg.children_max
+        crossover_chance = self.cfg.crossover_chance
+        mutation_chance = self.cfg.mutation_chance
+        while len(children) < max_len:
+            if random.uniform(0, 1) <= crossover_chance:
+                mother = self.population[self._get_parent_id(rank_list)]
+                father = self.population[self._get_parent_id(rank_list)]
+                children.append(mother.crossover(father))
+            if random.uniform(0, 1) <= mutation_chance:
+                mutable = self.population[self._get_parent_id(rank_list)]
+                children.append(mutable.mutate())
         self._decrement_population()
         self.population.extend(self.calculate_fitness(children))
 
+    @not_implemented
     def _evolve_by_roulette(self):
         self._sort(reverse=True)
         chance_list = []
         children = []
-        fitness_sum = sum(map(lambda individual: individual.fitness, self.population))
+        chance_sum = sum(map(lambda individual: 1 / individual.fitness, self.population))
         for i in range(1, len(self.population) + 1):
-            chance_list.append(sum(map(lambda individual: individual.fitness, self.population[:i])) / fitness_sum)
+            chance_list.append(sum(map(lambda individual: 1 / individual.fitness, self.population[:i])) / chance_sum)
         for _ in range(self.population_size):
             mother = self.population[self._get_parent_id(chance_list)]
             father = self.population[self._get_parent_id(chance_list)]
@@ -147,12 +182,12 @@ class Population:
 
     def _decrement_population(self):
         for individual in self.population:
-            individual.generations += 1
+            individual.vitality += 1
 
         self.population = [
             individual
             for individual in self.population
-            if individual.generations <= self._vitality
+            if individual.vitality <= self._max_vitality
         ]
 
     def calculate_fitness(self, population):
@@ -163,13 +198,13 @@ class Population:
         else:
             return self._calculate_fitness(population)
 
-    @timer
+    # @timer
     def _calculate_fitness(self, population):
         for individual in population:
             individual.fitness = sum((individual.calculate_fitness(td) for td in self.training_data))
         return population
 
-    def _calc(self, individual: Phenotype):
+    def _calc(self, individual: Individual):
         individual.fitness = sum((individual.calculate_fitness(t) for t in self.training_data))
         return individual
 

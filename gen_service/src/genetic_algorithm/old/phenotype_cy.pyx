@@ -1,4 +1,3 @@
-import os
 import random
 # import sys
 #
@@ -8,7 +7,7 @@ import random
 from data.training_data import TrainingData
 # from genotype_cy cimport CyGenotype as Genotype
 # cimport genotype_cy
-from genetic_algorithm.genotype import Genotype
+from genetic_algorithm.old.genotype import Genotype
 # from genotype_cy import Genotype
 # from genetic_algorithm.genotype_cy import get_random_genotype, CyGenotype as Genotype
 
