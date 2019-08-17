@@ -44,7 +44,7 @@ class GeneticAlgorithmImpl:
         Individual.set_mutation_chance(mutation_chance)
 
     def calculate_mutation_chance(self, individual: Individual) -> (float, int):
-        measurement_error = self.calculate_measurement_error(individual)
+        measurement_error = self.calculate_average_relative_error(individual)
         mutation_chance = measurement_error / 10
         return mutation_chance
 
@@ -52,7 +52,7 @@ class GeneticAlgorithmImpl:
     def calculate_relative_error(individual: Individual, td):
         return (td.pm10_after_24h - individual.calculate_pm10(td)) / td.pm10_after_24h
 
-    def calculate_measurement_error(self, individual: Individual) -> float:
+    def calculate_average_relative_error(self, individual: Individual) -> float:
         relative_errors = (
             __class__.calculate_relative_error(individual, td)
             for td in self.training_data
@@ -62,6 +62,14 @@ class GeneticAlgorithmImpl:
         measurement_error = (1 / len(self.training_data)) * sum_of_relative_errors
 
         return measurement_error
+
+    def calculate_average_error(self, individual: Individual) -> (int, float):
+        fitness = sum(
+            individual.calculate_fitness(td)
+            for td in self.training_data
+        )
+
+        return fitness/len(self.training_data)
 
     def get_timer(self):
         now = datetime.datetime.now()

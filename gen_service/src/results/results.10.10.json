@@ -1,0 +1,35 @@
+[
+  {
+    "evolution_type": "default",
+    "individual": {
+      "genotype": {
+        "wind": 0.08952963575701493,
+        "dew_point": -0.25550559226608477,
+        "pressure": 0.5595670276218241,
+        "humidity": 0.3210924841045404,
+        "pm10": 0.2559247654517246,
+        "temperature": -0.2984684793070197,
+        "date_time": -3.7428957226645733e-07,
+        "wind_direction": 0.03230598294608377
+      },
+      "vitality": 0,
+      "fitness": 150426.64457563913
+    },
+    "average_relative_error": 1.2629484998007012,
+    "average_error": 17.23495011178267,
+    "params": {
+      "population_size": 200,
+      "crossover_type": "None",
+      "max_vitality": 7,
+      "pass_best": true,
+      "max_generation": 400,
+      "children_max": 50,
+      "time_interval": 6,
+      "time_unit": "h",
+      "crossover_chance": 0.1,
+      "mutation_chance": 0.1,
+      "bootstrap": false,
+      "save_interval_type": "time"
+    }
+  }
+]

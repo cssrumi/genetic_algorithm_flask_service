@@ -15,11 +15,26 @@ d_key_dict = {
 }
 
 
+def csv_repair(filename):
+    final = []
+    with open(filename, 'r') as f:
+        for line in f.readlines():
+            final.append('20' + line)
+    repaired_name = "{}_fixed".format(filename)
+    with open(repaired_name, 'w') as f:
+        f.writelines(final)
+    return repaired_name
+
+
 def get_abs_path(file_path):
     file = os.path.abspath(__file__)
     f_dir = os.path.dirname(file)
     csv_file = os.path.join(f_dir, file_path)
     return os.path.abspath(csv_file)
+
+
+def export_data_from_xls(filename, db, key_dict):
+    pass
 
 
 def export_data_from_csv(filename, db, key_dict=d_key_dict, delimiter=',', dt_format="%Y-%m-%d %H:%M"):

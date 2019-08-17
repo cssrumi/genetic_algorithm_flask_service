@@ -76,6 +76,7 @@ class Population:
         return self.evolution_types.get(evolution_type, default)
 
     @timer
+    @logger
     def evolve(self):
         if self._pass_best and self.get_best():
             best = self.get_best()
@@ -85,6 +86,7 @@ class Population:
         else:
             self._evolve()
         self.set_best(self.get_current_best())
+        return self.get_best().fitness
 
     @not_implemented
     def _evolve_crossing_bests(self):
@@ -104,16 +106,16 @@ class Population:
         self._shuffle()
         max_size = self._sqrt_of_population_size
         for index in range(max_size):
-            if index+1 != max_size:
+            if index + 1 != max_size:
                 parents.append(
                     min(
-                        self.population[index*max_size:(index+1)*max_size],
+                        self.population[index * max_size:(index + 1) * max_size],
                         key=lambda i: i.fitness)
                 )
             else:
                 parents.append(
                     min(
-                        self.population[index*max_size:],
+                        self.population[index * max_size:],
                         key=lambda i: i.fitness)
                 )
         for mother in parents:
@@ -142,7 +144,7 @@ class Population:
         max_len = self.cfg.children_max
         crossover_chance = self.cfg.crossover_chance
         mutation_chance = self.cfg.mutation_chance
-        while len(children) < max_len:
+        for _ in range(max_len):
             if random.uniform(0, 1) <= crossover_chance:
                 mother = self.population[self._get_parent_id(rank_list)]
                 father = self.population[self._get_parent_id(rank_list)]

@@ -14,13 +14,19 @@ class DataMapper:
         if not isinstance(obj, dict):
             for key in self.mapping.keys():
                 try:
-                    data_dict[key] = float(obj.__dict__.get(self.mapping.get(key)))
+                    value = obj.__dict__.get(self.mapping.get(key))
+                    if isinstance(value, str):
+                        value = value.replace(',', '.')
+                    data_dict[key] = float(value)
                 except ValueError:
                     pass
         else:
             for key in self.mapping.keys():
                 try:
-                    data_dict[key] = float(obj.get(self.mapping.get(key)))
+                    value = obj.get(self.mapping.get(key))
+                    if isinstance(value, str):
+                        value = value.replace(',', '.')
+                    data_dict[key] = float(value)
                 except ValueError:
                     pass
         return Data(*data_dict.values())
