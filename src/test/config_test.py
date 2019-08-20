@@ -7,9 +7,14 @@ def instance_test():
 
     assert cfg1 is cfg2
 
+    print('instance_test passed')
+
 
 def env_test():
-    pass
+    cfg = config.Config()
+    print(vars(cfg))
+
+    print('env_test passed')
 
 
 def enum_test():
@@ -20,6 +25,8 @@ def enum_test():
 
     assert TimeUnitTypes.SEC is loaded_time_unit
     assert SaveIntervalTypes.TIME is loaded_save_interval_type
+
+    print('enum_test passed')
 
 
 def int_test():
@@ -40,4 +47,5 @@ def boolean_test():
 
 if __name__ == '__main__':
     instance_test()
+    env_test()
     enum_test()

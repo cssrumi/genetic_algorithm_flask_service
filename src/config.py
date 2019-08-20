@@ -58,74 +58,40 @@ class Config:
             setattr(self, key, value)
 
     def getenv(self, key, r_type, default):
-        type_dict = {
-            str: self.env_as_str,
-            int: self.env_as_int,
-            float: self.env_as_float,
-            bool: self.env_as_boolean,
-        }
-        if issubclass(r_type, Enum):
-            var = self.env_as_enum(key, r_type, default)
-        else:
-            f = type_dict.get(r_type)
-            var = f(key, default)
-        self.logger.debug('Config variable {} is set to {}'.format(key, var))
+        var = None
+        try:
+            if issubclass(r_type, Enum):
+                var = self.env_as_enum(key, r_type)
+            else:
+                var = self.env_of_type(key, r_type)
+        except (TypeError, ValueError) as e:
+            self.logger.warning('Key: {}, Value: {}, Error: {}'.format(key, os.getenv(key), e), exc_info=False)
+            if self.check_default(default, r_type):
+                var = default
+
+        self.logger.info('Config variable {} is set to {}'.format(key, var))
         return var
 
-    def env_as_enum(self, variable, enum, default):
+    def check_default(self, default, r_type, none=True):
+        if isinstance(default, r_type) or issubclass(type(default), r_type):
+            return True
+        if none and default is None:
+            return True
+        raise TypeError('Default value: {} isn\'t instance or child of type: '.format(default, r_type))
+
+    def env_of_type(self, variable, r_type):
+        str_var = os.getenv(variable.upper())
+        if str_var:
+            str_var.upper()
+        return r_type(str_var)
+
+    def env_as_enum(self, variable, enum):
         var = os.getenv(variable.upper()).upper()
         enum_values = [e.name for e in enum]
         if var in enum_values:
             return enum[var]
         else:
-            self.logger.error(
+            raise TypeError(
                 'Invalid enum type: "{}" for {} \n'
                 '\tValid types: {}'.format(var, variable, enum_values)
             )
-            self.logger.warning('{} value set to default: {}'.format(variable, default))
-            return default
-
-    def env_as_int(self, variable: str, default: Optional[int]) -> Optional[int]:
-        var = os.getenv(variable.upper(), default)
-        try:
-            var = int(var)
-        except (ValueError, TypeError) as e:
-            self.logger.exception(e, exc_info=True)
-            var = default
-            self.logger.warning('{} value set to default: {}'.format(variable, default))
-        return var
-
-    def env_as_float(self, variable: str, default: Optional[float]) -> Optional[float]:
-        var = os.getenv(variable.upper())
-        try:
-            if '%' in var:
-                var = float(var.replace('%', '').strip()) / 100
-            else:
-                var = float(var)
-        except (ValueError, TypeError) as e:
-            self.logger.exception(e, exc_info=True)
-            var = default
-            self.logger.warning('{} value set to default: {}'.format(variable, default))
-        return var
-
-    def env_as_str(self, variable: str, default: Optional[str]) -> Optional[str]:
-        var = os.getenv(variable.upper(), default)
-        try:
-            var = str(var)
-        except (ValueError, TypeError) as e:
-            self.logger.exception(e, exc_info=True)
-            var = default
-            self.logger.warning('{} value set to default: {}'.format(variable, default.lower()))
-        finally:
-            var.lower()
-        return var
-
-    def env_as_boolean(self, variable: str, default: Optional[bool]) -> Optional[bool]:
-        var = os.getenv(variable.upper(), default)
-        try:
-            var = bool(var)
-        except (ValueError, TypeError) as e:
-            self.logger.exception(e, exc_info=True)
-            var = default
-            self.logger.warning('{} value set to default: {}'.format(variable, default))
-        return var
