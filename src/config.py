@@ -5,8 +5,10 @@ from enum import Enum
 from typing import Optional
 
 import enums
+import yaml
 
 module_logger = logging.getLogger('genetic_algorithm.config')
+module_location = os.path.dirname(os.path.abspath(__file__))
 
 
 class Config:
@@ -41,13 +43,34 @@ class Config:
 
     def _load(self):
         self._load_from_env()
+        self._load_from_yaml()
         self.logger.info('Config loaded')
 
     def reload(self):
         with self.__lock:
             self._load()
 
-    def _load_from_yaml(self):
+    def _load_from_yaml(self, filename='config.yaml'):
+        if os.path.isfile(filename):
+            full_path = os.path.abspath(filename)
+        else:
+            full_path = os.path.join(module_location, filename)
+        if os.path.isfile(full_path):
+            with open(full_path, 'r') as stream:
+                yaml_data = yaml.safe_load(stream)
+            if isinstance(yaml_data, dict):
+                for key in [key for key in yaml_data.keys() if key in self.__props.keys()]:
+                    value = yaml_data[key]
+                    r_type = self.__props[key]['type']
+                    if issubclass(r_type, Enum):
+                        value = self.get_as_enum(value, r_type)
+                    else:
+                        self.check_type(value, r_type)
+                    setattr(self, key, value)
+        else:
+            raise FileNotFoundError('{} not found'.format(filename))
+
+    def check(self, key: str):
         pass
 
     def _load_from_env(self):
@@ -66,32 +89,35 @@ class Config:
                 var = self.env_of_type(key, r_type)
         except (TypeError, ValueError) as e:
             self.logger.warning('Key: {}, Value: {}, Error: {}'.format(key, os.getenv(key), e), exc_info=False)
-            if self.check_default(default, r_type):
+            if self.check_type(default, r_type):
                 var = default
 
         self.logger.info('Config variable {} is set to {}'.format(key, var))
         return var
 
-    def check_default(self, default, r_type, none=True):
-        if isinstance(default, r_type) or issubclass(type(default), r_type):
+    def check_type(self, variable, r_type, none=True):
+        if isinstance(variable, r_type) or issubclass(type(variable), r_type):
             return True
-        if none and default is None:
+        if none and variable is None:
             return True
-        raise TypeError('Default value: {} isn\'t instance or child of type: '.format(default, r_type))
+        raise TypeError('Value: {} isn\'t instance or child of type: '.format(variable, r_type))
 
-    def env_of_type(self, variable, r_type):
+    def env_of_type(self, variable: str, r_type: callable) -> object:
         str_var = os.getenv(variable.upper())
         if str_var:
             str_var.upper()
         return r_type(str_var)
 
-    def env_as_enum(self, variable, enum):
+    def env_as_enum(self, variable: str, enum: Enum) -> object:
         var = os.getenv(variable.upper()).upper()
+        return self.get_as_enum(var, enum)
+
+    def get_as_enum(self, variable: str, enum: Enum) -> object:
         enum_values = [e.name for e in enum]
-        if var in enum_values:
-            return enum[var]
+        if variable in enum_values:
+            return enum[variable]
         else:
             raise TypeError(
-                'Invalid enum type: "{}" for {} \n'
-                '\tValid types: {}'.format(var, variable, enum_values)
+                'Invalid enum type: "{}"\n'
+                '\tValid types: {}'.format(variable, enum_values)
             )

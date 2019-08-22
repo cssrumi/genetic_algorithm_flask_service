@@ -17,6 +17,11 @@ def env_test():
     print('env_test passed')
 
 
+def load_from_yaml_test():
+    cfg = config.Config()
+    cfg._load_from_yaml()
+
+
 def enum_test():
     from enums import TimeUnitTypes, SaveIntervalTypes
     cfg = config.Config()
@@ -49,3 +54,4 @@ if __name__ == '__main__':
     instance_test()
     env_test()
     enum_test()
+    load_from_yaml_test()
