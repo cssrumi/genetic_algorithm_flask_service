@@ -2,7 +2,7 @@ import logging
 import threading
 import os
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 import enums
 import yaml
@@ -27,6 +27,15 @@ class Config:
         'crossover_chance': {'type': float, 'default': 0.8},
         'mutation_chance': {'type': float, 'default': 0.9},
         'bootstrap': {'type': bool, 'default': False},
+        'database_type': {'type': enums.DatabaseTypes, 'default': enums.DatabaseTypes.MONGODB},
+        'database_ip': {'type': str, 'default': 'localhost'},
+        'database_port': {'type': str, 'default': 27017},
+        'database_user': {'type': str, 'default': None},
+        'database_password': {'type': str, 'default': None},
+        'database_name': {'type': str, 'default': 'data'},
+        'table_name': {'type': str, 'default': None},
+        'collection_name': {'type': str, 'default': 'data'},
+        'environment': {'type': enums.EnvironmentTypes, 'default': enums.EnvironmentTypes.DEV},
     }
 
     @staticmethod
@@ -113,22 +122,39 @@ class Config:
 
     def convert(self, data: dict) -> dict:
         result = {}
-        for key, value in data.items():
-            r_type = self.get_type(key)
-            result[key] = self.cast(value, r_type)
+        try:
+            for key, value in data.items():
+                r_type = self.get_type(key)
+                result[key] = self.cast(value, r_type)
+        except (TypeError, ValueError) as e:
+            error_message = str(e) + '\n\tConverting {} from {} to {}'.format(value, key, r_type)
+            self.logger.exception(error_message)
+            raise
         return result
 
     def merge(self, config_list: List[dict]) -> dict:
         final_config = {}
         for cfg in config_list:
             final_config.update(cfg)
+        self.logger.debug('Merged config: {}'.format(final_config))
         return final_config
 
-    def cast(self, variable: str, to: callable) -> object:
+    def cast(self, variable: object, to: callable, safe: bool = False) -> object:
+        self.logger.debug(
+            'Safe Casting {} to {}'.format(variable, to)
+            if safe else
+            'Unsafe Casting {} to {}'.format(variable, to)
+        )
         if issubclass(to, Enum):
             return self.as_enum(variable, to)
+        elif not safe and variable is None:
+            return None
+        if not safe and isinstance(variable, str):
+            if variable.upper() == 'NONE':
+                return None
+            else:
+                return to(variable)
         else:
-            self.logger.debug('Casting {} to {}'.format(variable, to))
             return to(variable)
 
     def get_type(self, key: str) -> object:
@@ -149,12 +175,11 @@ class Config:
             return True
         raise TypeError('Value: {} isn\'t instance or child of type: '.format(variable, r_type))
 
-    def as_enum(self, variable: str, enum: Enum) -> object:
+    def as_enum(self, variable: Union[str, Enum], enum: Enum) -> object:
         enum_values = [e.name for e in enum]
         if variable in enum_values:
             return enum[variable]
+        elif isinstance(variable, enum):
+            return variable
         else:
-            raise TypeError(
-                'Invalid enum type: "{}"\n'
-                '\tValid types: {}'.format(variable, enum_values)
-            )
+            raise TypeError('Invalid enum type: "{}"\n\tValid types: {}'.format(variable, enum_values))
